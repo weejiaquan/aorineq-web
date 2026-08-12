@@ -3,13 +3,26 @@ import Link from "next/link";
 
 import { CodeBlock } from "@/components/CodeBlock";
 import { SkinPlayer } from "@/components/SkinPlayer";
+import { GITHUB_URL } from "@/lib/site";
+import {
+  MAX_AUTHOR_LENGTH,
+  MAX_DESCRIPTION_LENGTH,
+  MAX_SOURCE_URL_LENGTH,
+  MAX_TAGS,
+  MAX_TAG_LENGTH,
+  MAX_TITLE_LENGTH,
+  MAX_VERSION_LENGTH,
+} from "@/lib/skin-meta";
 import { loadHeroSkin } from "@/lib/skins-server";
 
 export const metadata: Metadata = {
   title: "Skin format",
   description:
-    "Every skin.json field: the fill range, percent text styling, sprite sheets, GIF layers and the muted layer — plus what makes a skin fail to load.",
+    "Every skin.json field: the fill range, percent text styling, sprite sheets, GIF layers, the muted layer and the optional credits block — plus what makes a skin fail to load.",
 };
+
+/** The desktop app's own schema reference, which this page is the readable half of. */
+const REFERENCE_URL = `${GITHUB_URL}/blob/master/docs/reference.md`;
 
 export default async function SkinDocsPage() {
   const skin = await loadHeroSkin();
@@ -261,6 +274,129 @@ muted.png     optional. Shown instead of the dim-and-badge mute treatment.`}
           2,
         )}
       </CodeBlock>
+
+      <h2 id="metadata">Credits</h2>
+      <p>
+        Since v3.2 the skin designer writes an optional metadata block into the same{" "}
+        <code>skin.json</code>, so a skin can say who made it without a readme travelling beside
+        it. Every field here is optional and every one of them is absent by default: a skin
+        written before v3.2 carries none, loads identically, and is not deprecated by this.
+        Filling them in changes nothing about how the OSD draws.
+      </p>
+
+      <table>
+        <thead>
+          <tr>
+            <th>Field</th>
+            <th>Limit</th>
+            <th>What it does</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>
+              <code>title</code>
+            </td>
+            <td>{MAX_TITLE_LENGTH} characters</td>
+            <td>
+              The display name, distinct from the folder name. Absent means the folder name is
+              the name.
+            </td>
+          </tr>
+          <tr>
+            <td>
+              <code>author</code>
+            </td>
+            <td>{MAX_AUTHOR_LENGTH} characters</td>
+            <td>Who made it. Absent means the skin is credited to nobody, not to the host.</td>
+          </tr>
+          <tr>
+            <td>
+              <code>description</code>
+            </td>
+            <td>{MAX_DESCRIPTION_LENGTH} characters</td>
+            <td>A sentence or two about the skin. Line breaks are kept.</td>
+          </tr>
+          <tr>
+            <td>
+              <code>version</code>
+            </td>
+            <td>{MAX_VERSION_LENGTH} characters</td>
+            <td>
+              The author&apos;s own version string for their artwork —{" "}
+              <code>&quot;2&quot;</code>, <code>&quot;2026-02&quot;</code>. A string, never
+              parsed as a number and never compared against the app&apos;s version.
+            </td>
+          </tr>
+          <tr>
+            <td>
+              <code>tags</code>
+            </td>
+            <td>
+              {MAX_TAGS} tags, {MAX_TAG_LENGTH} characters each
+            </td>
+            <td>
+              An array of strings. De-duplicated case-insensitively with the first spelling kept;
+              anything past the {MAX_TAGS}
+              th is dropped.
+            </td>
+          </tr>
+          <tr>
+            <td>
+              <code>sourceUrl</code>
+            </td>
+            <td>{MAX_SOURCE_URL_LENGTH} characters</td>
+            <td>
+              Where the skin came from. Absolute <code>https</code> only, with no credentials in
+              it; anything else is dropped rather than linked, and a URL over the limit is
+              dropped whole rather than truncated into a different destination.
+            </td>
+          </tr>
+        </tbody>
+      </table>
+
+      <p>
+        These are credits, not configuration, so they never fail a skin. A field of the wrong
+        type or a value that cannot be used is ignored and the rest of the skin loads — unlike
+        the rendering fields above, where a malformed <code>skin.json</code> fails the whole
+        skin. Text is trimmed, capped and stripped of the control and bidi-override characters
+        that let a credit render as something other than what it says.
+      </p>
+
+      <CodeBlock label="skin.json — the credits keys, in the same file as the rendering ones">
+        {`{
+  "title": "Midnight bar",
+  "author": "your name here",
+  "description": "A narrow bar with a soft glow, sized for a 1080p screen.",
+  "version": "2",
+  "tags": ["bar", "dark", "minimal"],
+  "sourceUrl": "https://example.com/skins/midnight-bar",
+
+  "percentText": { "show": true, "x": 120, "y": 8, "align": "center" },
+  "fillStartX": 12,
+  "fillEndX": 228
+}`}
+      </CodeBlock>
+
+      <p>
+        Where they show up: the app&apos;s skin picker lists the title, the author and the
+        description instead of a bare folder name, and a{" "}
+        <Link href="/gallery">gallery</Link> card takes its byline, blurb, tags and version
+        straight from the skin — linking the author&apos;s name at <code>sourceUrl</code> when
+        there is one. A listing here only names those fields itself to override the skin or to
+        fill a gap, so a skin that credits itself is credited by its author rather than by
+        whoever committed the entry.
+      </p>
+      <p>
+        <strong>Export…</strong> also writes a <code>preview.png</code> into the zip, rendered
+        from the skin at export time. It is generated, not authored: import ignores it, and
+        deleting it costs nothing.
+      </p>
+      <p>
+        The full schema, including every default the app applies, is in the desktop
+        repository&apos;s{" "}
+        <a href={REFERENCE_URL}>reference.md</a>.
+      </p>
 
       <h2 id="animation">Animated layers</h2>
       <p>There are three ways to animate a layer, and they behave identically once loaded.</p>

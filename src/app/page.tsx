@@ -1,13 +1,15 @@
 import Link from "next/link";
 
 import { CodeBlock } from "@/components/CodeBlock";
+import { DeferredMedia } from "@/components/DeferredMedia";
 import { DownloadCta } from "@/components/DownloadCta";
 import { EqCurve } from "@/components/EqCurve";
-import { MediaSlot } from "@/components/MediaSlot";
+import { MediaFigure } from "@/components/MediaFigure";
 import { SkinPlayer } from "@/components/SkinPlayer";
 import { buildInstallSkinLink } from "@/lib/protocol";
 import { suggestPreampDb } from "@/lib/eq-response";
 import type { EqBand } from "@/lib/eq";
+import { loadCapture, type LoadedCapture } from "@/lib/media";
 import { loadHeroSkin } from "@/lib/skins-server";
 import { absoluteUrl, EAPO_URL } from "@/lib/site";
 
@@ -22,7 +24,12 @@ const DEMO_BANDS: EqBand[] = [
 ];
 
 export default async function HomePage() {
-  const skin = await loadHeroSkin();
+  const [skin, designer, eqEditor, osd] = await Promise.all([
+    loadHeroSkin(),
+    loadCapture("skin-designer"),
+    loadCapture("eq-editor"),
+    loadCapture("osd-demo"),
+  ]);
   const installLink = buildInstallSkinLink({
     url: absoluteUrl(skin.zipUrl),
     name: skin.installName,
@@ -33,10 +40,10 @@ export default async function HomePage() {
     <>
       <Hero skin={skin} />
       <Problem />
-      <Skins skin={skin} installLink={installLink} />
-      <Equalizer />
+      <Skins skin={skin} installLink={installLink} designer={designer} />
+      <Equalizer capture={eqEditor} />
       <Sharing />
-      <Closing />
+      <Closing capture={osd} />
     </>
   );
 }
@@ -137,9 +144,11 @@ function Problem() {
 function Skins({
   skin,
   installLink,
+  designer,
 }: {
   skin: Awaited<ReturnType<typeof loadHeroSkin>>;
   installLink: string;
+  designer: LoadedCapture;
 }) {
   return (
     <section className="border-b border-line">
@@ -187,11 +196,7 @@ function Skins({
             </div>
 
             <div className="mt-9">
-              <MediaSlot
-                title="The skin designer"
-                detail="Fill slider, draggable percent number, the two range handles, and Test on desktop."
-                aspect="16 / 10"
-              />
+              <MediaFigure capture={designer} />
             </div>
           </div>
 
@@ -215,7 +220,7 @@ function Skins({
   );
 }
 
-function Equalizer() {
+function Equalizer({ capture }: { capture: LoadedCapture }) {
   const preamp = suggestPreampDb(DEMO_BANDS);
   return (
     <section className="border-b border-line">
@@ -262,6 +267,10 @@ Filter 3: ON PK Fc 1400 Hz Gain 1.4 dB Q 1.80`}
               Build a shareable preset link
             </Link>
           </div>
+        </div>
+
+        <div className="mt-10">
+          <DeferredMedia capture={capture} />
         </div>
       </div>
     </section>
@@ -317,7 +326,7 @@ function Sharing() {
   );
 }
 
-function Closing() {
+function Closing({ capture }: { capture: LoadedCapture }) {
   return (
     <section>
       <div className="shell py-16 lg:py-20">
@@ -342,11 +351,7 @@ function Closing() {
             </div>
           </div>
 
-          <MediaSlot
-            title="Tray, slider and the OSD in place"
-            detail="A short capture of the volume keys driving the flyout at the configured screen anchor."
-            aspect="4 / 3"
-          />
+          <MediaFigure capture={capture} className="lg:self-center" />
         </div>
       </div>
     </section>
