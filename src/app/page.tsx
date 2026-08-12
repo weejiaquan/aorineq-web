@@ -44,7 +44,7 @@ export default async function HomePage() {
 async function Hero({ skin }: { skin: Awaited<ReturnType<typeof loadHeroSkin>> }) {
   return (
     <section className="border-b border-line">
-      <div className="shell grid gap-14 py-16 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.05fr)] lg:items-center lg:gap-16 lg:py-24">
+      <div className="shell grid gap-14 py-16 [&>*]:min-w-0 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.05fr)] lg:items-center lg:gap-16 lg:py-24">
         <div>
           <p className="eyebrow">Windows 10/11 · tray app · MIT</p>
           <h1 className="mt-4 max-w-[13ch] text-[clamp(2.5rem,6vw,4rem)] font-bold text-text">
@@ -153,7 +153,7 @@ function Skins({
           </p>
         </div>
 
-        <div className="mt-10 grid gap-10 lg:grid-cols-2 lg:gap-14">
+        <div className="mt-10 grid gap-10 [&>*]:min-w-0 lg:grid-cols-2 lg:gap-14">
           <div>
             <p className="text-muted">
               A skin is two images the same size. <code className="font-mono text-text">empty.png</code>{" "}
@@ -225,7 +225,7 @@ function Equalizer() {
           <p className="eyebrow">20 Hz … 20 kHz · up to 64 bands</p>
         </div>
 
-        <div className="mt-10 grid gap-10 lg:grid-cols-[minmax(0,1.15fr)_minmax(0,1fr)] lg:gap-14">
+        <div className="mt-10 grid gap-10 [&>*]:min-w-0 lg:grid-cols-[minmax(0,1.15fr)_minmax(0,1fr)] lg:gap-14">
           <div className="panel p-5 sm:p-6">
             <p className="eyebrow">Response · 6 bands</p>
             <EqCurve
@@ -321,7 +321,7 @@ function Closing() {
   return (
     <section>
       <div className="shell py-16 lg:py-20">
-        <div className="grid gap-10 lg:grid-cols-2 lg:gap-14">
+        <div className="grid gap-10 [&>*]:min-w-0 lg:grid-cols-2 lg:gap-14">
           <div>
             <h2 className="text-3xl font-bold text-sand sm:text-4xl">
               It keeps itself current

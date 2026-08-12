@@ -118,7 +118,7 @@ export function EqPresetBuilder() {
   };
 
   return (
-    <div className="grid gap-10 lg:grid-cols-[minmax(0,1.1fr)_minmax(0,1fr)] lg:gap-12">
+    <div className="grid gap-10 [&>*]:min-w-0 lg:grid-cols-[minmax(0,1.1fr)_minmax(0,1fr)] lg:gap-12">
       <div>
         <div className="panel overflow-hidden">
           <div className="flex items-center justify-between border-b border-line px-5 py-3">
