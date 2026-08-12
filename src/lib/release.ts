@@ -1,47 +1,39 @@
-import { GITHUB_REPO, RELEASES_URL } from "./site";
+import { EXE_ASSET_NAME, GITHUB_REPO, SHA256_URL } from "./site";
 
 /**
- * The latest AorinEQ release, read from the GitHub API.
+ * Facts about the latest AorinEQ release, for the copy that sits beside the download button.
  *
- * The download button shows the digest next to the file because the app's own updater checks
- * exactly that digest before it replaces the running exe — a reader can hold the site to the
- * same standard with one `Get-FileHash`. GitHub is rate-limited per IP, so the response is
- * cached for an hour and every failure degrades to a plain link to the releases page instead
- * of an error.
+ * The button itself never waits on any of this — it points at `DOWNLOAD_URL`, which GitHub
+ * resolves on its own side. What is fetched here is only the honest labelling: which version
+ * you are about to get, how big it is, and the digest the app's own updater checks before it
+ * replaces a running exe. GitHub rate-limits the API per IP, so every call is cached for an
+ * hour and every failure degrades to showing less, never to a broken link.
+ *
+ * The digest is read from the `.sha256` sidecar by the same name-addressed URL the exe uses,
+ * not from the API's asset list, so the two always describe the same file.
  */
 
-export interface ReleaseAsset {
-  name: string;
-  size: number;
-  downloadUrl: string;
-}
-
 export interface LatestRelease {
+  /** The release tag, e.g. `v1.4.0`. */
   tag: string;
-  publishedAt: string | null;
-  htmlUrl: string;
-  exe: ReleaseAsset | null;
-  /** Contents of AorinEQ.exe.sha256, reduced to the bare 64-hex digest. */
-  sha256: string | null;
+  /** Size of AorinEQ.exe in bytes, or null if the release has no asset under that name. */
+  exeSize: number | null;
 }
 
 interface GithubAsset {
   name?: unknown;
   size?: unknown;
-  browser_download_url?: unknown;
 }
 
 const REVALIDATE_SECONDS = 3600;
 
-function toAsset(raw: GithubAsset): ReleaseAsset | null {
-  if (
-    typeof raw.name !== "string" ||
-    typeof raw.size !== "number" ||
-    typeof raw.browser_download_url !== "string"
-  ) {
-    return null;
+/** The size of the exe asset in a release payload's asset list, by exact name. */
+function exeSizeOf(assets: unknown): number | null {
+  if (!Array.isArray(assets)) return null;
+  for (const raw of assets as GithubAsset[]) {
+    if (raw.name === EXE_ASSET_NAME && typeof raw.size === "number") return raw.size;
   }
-  return { name: raw.name, size: raw.size, downloadUrl: raw.browser_download_url };
+  return null;
 }
 
 /** A `.sha256` sidecar is usually `<digest>  <filename>`; keep only the digest. */
@@ -63,35 +55,23 @@ export async function fetchLatestRelease(): Promise<LatestRelease | null> {
       },
     );
     if (!response.ok) return null;
-    const json = (await response.json()) as {
-      tag_name?: unknown;
-      published_at?: unknown;
-      html_url?: unknown;
-      assets?: unknown;
-    };
+    const json = (await response.json()) as { tag_name?: unknown; assets?: unknown };
     if (typeof json.tag_name !== "string") return null;
+    return { tag: json.tag_name, exeSize: exeSizeOf(json.assets) };
+  } catch {
+    return null;
+  }
+}
 
-    const assets = Array.isArray(json.assets) ? (json.assets as GithubAsset[]) : [];
-    const exe = assets.map(toAsset).find((a): a is ReleaseAsset => a?.name === "AorinEQ.exe") ?? null;
-    const shaAsset =
-      assets.map(toAsset).find((a): a is ReleaseAsset => a?.name === "AorinEQ.exe.sha256") ?? null;
-
-    let sha256: string | null = null;
-    if (shaAsset) {
-      const shaResponse = await fetch(shaAsset.downloadUrl, {
-        headers: { "User-Agent": "aorineq-web" },
-        next: { revalidate: REVALIDATE_SECONDS },
-      });
-      if (shaResponse.ok) sha256 = extractDigest(await shaResponse.text());
-    }
-
-    return {
-      tag: json.tag_name,
-      publishedAt: typeof json.published_at === "string" ? json.published_at : null,
-      htmlUrl: typeof json.html_url === "string" ? json.html_url : RELEASES_URL,
-      exe,
-      sha256,
-    };
+/** The SHA-256 of the exe the download button hands out, or null if the sidecar is unreadable. */
+export async function fetchLatestDigest(): Promise<string | null> {
+  try {
+    const response = await fetch(SHA256_URL, {
+      headers: { "User-Agent": "aorineq-web" },
+      next: { revalidate: REVALIDATE_SECONDS },
+    });
+    if (!response.ok) return null;
+    return extractDigest(await response.text());
   } catch {
     return null;
   }

@@ -82,8 +82,8 @@ export const TEXT_PAIRINGS: Pairing[] = [
   { foreground: "sand", background: "panel", minimum: 4.5, usedFor: "panel headings" },
   { foreground: "mint", background: "ink", minimum: 4.5, usedFor: "verified/hash confirmations" },
   { foreground: "mint", background: "panel", minimum: 4.5, usedFor: "verified state inside panels" },
-  { foreground: "rust", background: "ink", minimum: 4.5, usedFor: "validation errors" },
-  { foreground: "rust", background: "panel", minimum: 4.5, usedFor: "validation errors in forms" },
-  { foreground: "ink", background: "amber", minimum: 4.5, usedFor: "the primary download button" },
+  { foreground: "rust", background: "ink", minimum: 4.5, usedFor: "validation errors, and the SmartScreen line under a compact download button" },
+  { foreground: "rust", background: "panel", minimum: 4.5, usedFor: "validation errors in forms, and the SmartScreen heading beside the download" },
+  { foreground: "ink", background: "amber", minimum: 4.5, usedFor: "the primary download button, including its platform/size sub-label" },
   { foreground: "line", background: "ink", minimum: 1.2, usedFor: "hairline rules (non-text)" },
 ];

@@ -3,7 +3,13 @@ import Link from "next/link";
 
 import { CodeBlock } from "@/components/CodeBlock";
 import { DownloadCta } from "@/components/DownloadCta";
-import { EAPO_URL, RELEASES_URL } from "@/lib/site";
+import {
+  EAPO_URL,
+  EXE_ASSET_NAME,
+  LATEST_RELEASE_URL,
+  SHA256_ASSET_NAME,
+  SHA256_URL,
+} from "@/lib/site";
 
 export const metadata: Metadata = {
   title: "Install and setup",
@@ -24,6 +30,24 @@ export default function InstallDocsPage() {
       <div className="my-9">
         <DownloadCta />
       </div>
+
+      <h2 id="smartscreen">&ldquo;Windows protected your PC&rdquo;</h2>
+      <p>
+        Expect this. The first time you run <code>{EXE_ASSET_NAME}</code>, Windows SmartScreen
+        shows a blue box that says <strong>Windows protected your PC</strong> and offers only a
+        <strong> Don&apos;t run</strong> button. Click <strong>More info</strong>, then{" "}
+        <strong>Run anyway</strong>. It appears once per build.
+      </p>
+      <p>
+        The cause is not a detection of anything. AorinEQ is not code-signed — an
+        Authenticode certificate costs more per year than this app charges ever — and SmartScreen
+        warns about every unsigned executable it has not seen often enough. A signature would
+        only prove who published the file, which is what the digest below proves instead.
+      </p>
+      <p>
+        If your browser blocks the download itself rather than the run, it is the same reasoning:
+        choose <strong>Keep</strong> when it asks.
+      </p>
 
       <h2 id="two-modes">The two volume modes</h2>
       <p>
@@ -129,14 +153,22 @@ export default function InstallDocsPage() {
 
       <h2 id="verify">Verifying the download</h2>
       <p>
-        Every release ships <code>AorinEQ.exe.sha256</code> beside the exe, and the app&apos;s
-        own updater refuses to install a build whose digest does not match it. Hold a manual
-        download to the same rule:
+        This is the answer to the SmartScreen warning above. Every release ships{" "}
+        <a href={SHA256_URL}>
+          <code>{SHA256_ASSET_NAME}</code>
+        </a>{" "}
+        beside the exe, and the app&apos;s own updater refuses to install a build whose digest
+        does not match it. Hold a manual download to the same rule — in PowerShell, in the folder
+        you saved it to:
       </p>
-      <CodeBlock label="PowerShell">{`Get-FileHash .\\AorinEQ.exe -Algorithm SHA256`}</CodeBlock>
+      <CodeBlock label="PowerShell">
+        {`Get-FileHash .\\${EXE_ASSET_NAME} -Algorithm SHA256`}
+      </CodeBlock>
       <p>
-        Compare the result with the digest on the <a href={RELEASES_URL}>release page</a> or the
-        one shown on the download button above.
+        Compare the 64 characters it prints with the digest shown on the download button above,
+        with the sidecar file, or with the digest on the{" "}
+        <a href={LATEST_RELEASE_URL}>release page</a>. All three are the same value. If they
+        differ, do not run the file.
       </p>
 
       <h2 id="updates">Updates</h2>

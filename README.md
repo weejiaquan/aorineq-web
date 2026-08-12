@@ -10,7 +10,7 @@ Next.js (App Router) + Tailwind, deployed on Vercel. No database, no uploads, no
 
 | Route | What it does |
 | --- | --- |
-| `/` | Landing page. Live skin preview driven by the app's real fill math, and a download button built from the latest GitHub release with its SHA-256. |
+| `/` | Landing page. Live skin preview driven by the app's real fill math, and a one-click download of the exe with its SHA-256. |
 | `/docs/install` | Setup, and when Equalizer APO is and is not required. |
 | `/docs/skins` | Every `skin.json` field, the fill range, sprite sheets, GIF and muted layers. |
 | `/docs/protocol` | The `aorineq://` URL contract, so other sites can emit install buttons. |
@@ -18,6 +18,33 @@ Next.js (App Router) + Tailwind, deployed on Vercel. No database, no uploads, no
 | `/tools/skin-link` | Paste an https link to a skin zip; the server hashes it and returns an `aorineq://install-skin` link. |
 | `/tools/eq-preset` | Build a band chain, see its response curve, and get an `aorineq://apply-preset` link that carries the whole preset. |
 | `/legal/*` | Terms, content policy, and the takedown route. |
+
+## The download link depends on the asset filename
+
+Every download control on this site is a direct link to the exe, so a visitor gets the file on
+the first click instead of landing on a release page:
+
+```
+https://github.com/weejiaquan/aorineq/releases/latest/download/AorinEQ.exe
+https://github.com/weejiaquan/aorineq/releases/latest/download/AorinEQ.exe.sha256
+```
+
+GitHub resolves `latest/download/<name>` by **asset filename**, not by tag. That is what keeps
+the link correct forever without a rebuild here — and it is also the one thing that can break
+it silently:
+
+> **A release must publish its assets as exactly `AorinEQ.exe` and `AorinEQ.exe.sha256`.**
+> Rename either one — `AorinEQ-v1.5.exe`, `AorinEQ.zip`, a suffixed architecture — and these
+> links 404. Nothing on this site can detect that; the page still renders, the button still
+> looks right, and every download fails.
+
+Both names live in `src/lib/site.ts` as `EXE_ASSET_NAME` and `SHA256_ASSET_NAME`, and
+`latestAssetUrl()` is the only place a download URL is built. `src/test/download.test.ts`
+fails if any page or component writes a GitHub URL of its own.
+
+The version, size and digest shown beside the button come from the GitHub API and the `.sha256`
+sidecar, cached for an hour. If either is unavailable the button still works — it never depends
+on a successful API call.
 
 ## The parts ported from the desktop app
 

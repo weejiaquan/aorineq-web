@@ -1,4 +1,4 @@
-import { CONTACT_EMAIL, CONTACT_IS_PLACEHOLDER } from "@/lib/site";
+import { CONTACT_EMAIL, CONTACT_IS_PLACEHOLDER, ISSUES_URL } from "@/lib/site";
 
 /**
  * The address every policy page points at. It is a placeholder until the site owner sets it,
@@ -21,7 +21,7 @@ export function ContactCallout() {
             it in <code className="font-mono">src/lib/site.ts</code> before these policies mean
             anything. Until then, use the{" "}
             <a
-              href="https://github.com/weejiaquan/aorineq/issues"
+              href={ISSUES_URL}
               className="text-amber underline-offset-4 hover:underline"
             >
               project issue tracker

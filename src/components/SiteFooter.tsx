@@ -1,6 +1,6 @@
 import Link from "next/link";
 
-import { EAPO_URL, GITHUB_URL, ISSUES_URL } from "@/lib/site";
+import { DOWNLOAD_URL, EAPO_URL, EXE_ASSET_NAME, GITHUB_URL, ISSUES_URL } from "@/lib/site";
 
 const COLUMNS = [
   {
@@ -71,7 +71,11 @@ export function SiteFooter() {
           AorinEQ is MIT-licensed. Equalizer APO is a separate GPLv2 project and is never
           bundled here.
         </p>
-        <p className="readout flex gap-4">
+        <p className="readout flex flex-wrap gap-4">
+          {/* Direct to the exe, like every other download control here — never a release page. */}
+          <a href={DOWNLOAD_URL} className="text-amber transition-opacity hover:opacity-80">
+            Download {EXE_ASSET_NAME}
+          </a>
           <a href={GITHUB_URL} className="text-muted transition-colors hover:text-text">
             Source
           </a>
