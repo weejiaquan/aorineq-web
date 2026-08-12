@@ -1,0 +1,5 @@
+# Skin artwork and archives must survive checkout byte for byte: the SHA-256 pinned
+# into every install link is computed from these exact files.
+*.png binary
+*.gif binary
+*.zip binary
