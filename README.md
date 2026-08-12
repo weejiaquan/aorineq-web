@@ -1,36 +1,75 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# aorineq-web
 
-## Getting Started
+The website for [AorinEQ](https://github.com/weejiaquan/aorineq) — a Windows tray app for
+volume keys, a skinnable on-screen display, and a per-device parametric EQ written into
+Equalizer APO.
 
-First, run the development server:
+Next.js (App Router) + Tailwind, deployed on Vercel. No database, no uploads, no accounts.
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+## What is here
+
+| Route | What it does |
+| --- | --- |
+| `/` | Landing page. Live skin preview driven by the app's real fill math, and a download button built from the latest GitHub release with its SHA-256. |
+| `/docs/install` | Setup, and when Equalizer APO is and is not required. |
+| `/docs/skins` | Every `skin.json` field, the fill range, sprite sheets, GIF and muted layers. |
+| `/docs/protocol` | The `aorineq://` URL contract, so other sites can emit install buttons. |
+| `/gallery` | Manifest-driven skin gallery. Each card previews the real artwork and carries an install link with the digest pinned. |
+| `/tools/skin-link` | Paste an https link to a skin zip; the server hashes it and returns an `aorineq://install-skin` link. |
+| `/tools/eq-preset` | Build a band chain, see its response curve, and get an `aorineq://apply-preset` link that carries the whole preset. |
+| `/legal/*` | Terms, content policy, and the takedown route. |
+
+## The parts ported from the desktop app
+
+These mirror files in the AorinEQ repository and must not drift from them. Each carries a
+comment naming its source.
+
+| Here | There |
+| --- | --- |
+| `src/lib/skin-math.ts` | `SkinMath.cs`, plus `SkinComposite.ComplementClip` |
+| `src/lib/skin.ts` | `SkinLoader.cs` |
+| `src/lib/volume.ts` | `VolumeState.cs` |
+| `src/lib/eq.ts` | `Eq.cs` |
+| `src/lib/eq-response.ts` | `EqResponse.cs` |
+| `src/lib/eq-share.ts` | `EqShare.cs` |
+| `src/lib/protocol.ts` | `ProtocolLink.cs`, `FileNames.cs` |
+| `src/lib/png.ts` | `PngHeader.cs` |
+
+## Adding a skin to the gallery
+
+1. Put `empty.png`, `full.png` and `skin.json` in `public/skins/<id>/`.
+2. Zip those files at the archive root as `public/skins/<id>.zip`.
+3. Add an entry to `src/data/skins.json`.
+4. `npm test` — the suite reads the real files and fails if the manifest and the artwork
+   disagree.
+
+Dimensions and the SHA-256 are read from the files at build time. Nothing about a skin is
+typed twice.
+
+## Commands
+
+```
+npm run dev        # local development
+npm run build      # production build
+npm test           # vitest, including the contrast check against globals.css
+npm run typecheck  # tsc --noEmit
+npm run lint       # eslint
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Configuration
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+`NEXT_PUBLIC_SITE_URL` sets the absolute origin baked into `aorineq://install-skin` links. On
+Vercel it falls back to `VERCEL_PROJECT_PRODUCTION_URL`. Locally there is no https origin, so
+links built in development point at `http://localhost:3000` and the app will refuse them —
+that is correct, not a bug.
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+`CONTACT_EMAIL` in `src/lib/site.ts` is a placeholder. The policy pages say so, loudly, until
+it is replaced.
 
-## Learn More
+## Colour and contrast
 
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+The palette lives in `src/app/globals.css` and is sourced from the seed skin's own artwork
+(`#FEC707` percent text, `#F3CFAB` outline). Every foreground/background pairing the UI uses
+is listed in `src/lib/contrast.ts` and checked against the stylesheet by
+`src/test/contrast.test.ts`. A palette edit that drops a pairing below its threshold fails the
+test run.

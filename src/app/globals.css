@@ -1,26 +1,227 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
+/*
+ * The palette is sourced from the artwork the app renders: --amber is the percent-text colour
+ * of the seia-bar-shadow skin (#FEC707) and --sand is its outline colour (#F3CFAB), read
+ * straight out of that skin's skin.json. The ground is a graphite faceplate rather than pure
+ * black so the artwork, not the page, is the brightest thing on screen.
+ *
+ * Every foreground/background pairing used in the UI is listed in src/lib/contrast.ts and
+ * checked against these exact values by src/test/contrast.test.ts.
+ */
+@theme {
+  --color-ink: #0b0e13;
+  --color-panel: #12161e;
+  --color-raised: #1a1f29;
+  --color-line: #2a3240;
+  --color-text: #e6e9ef;
+  --color-muted: #98a3b4;
+  --color-amber: #fec707;
+  --color-sand: #f3cfab;
+  --color-mint: #7fd1c1;
+  --color-rust: #ff8a6b;
+
+  --font-display: var(--font-archivo), ui-sans-serif, system-ui, sans-serif;
+  --font-sans: var(--font-plex-sans), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-plex-mono), ui-monospace, monospace;
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
+@layer base {
+  html {
+    scroll-behavior: smooth;
+    -webkit-text-size-adjust: 100%;
+  }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+  body {
+    background-color: var(--color-ink);
+    color: var(--color-text);
+    font-family: var(--font-sans);
+    font-size: 1rem;
+    line-height: 1.65;
+    overflow-x: hidden;
+    text-rendering: optimizeLegibility;
+  }
+
+  /* The display face carries the faceplate silkscreen look: expanded width, tight tracking. */
+  h1,
+  h2,
+  h3 {
+    font-family: var(--font-display);
+    font-variation-settings: "wdth" 115;
+    letter-spacing: -0.02em;
+    line-height: 1.05;
+    text-wrap: balance;
+  }
+
+  a {
+    color: inherit;
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--color-amber);
+    outline-offset: 3px;
+    border-radius: 2px;
+  }
+
+  ::selection {
+    background: var(--color-amber);
+    color: var(--color-ink);
   }
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+@layer components {
+  /* The page's single horizontal measure. Every section aligns to it. */
+  .shell {
+    width: 100%;
+    max-width: 76rem;
+    margin-inline: auto;
+    padding-inline: 1.25rem;
+  }
+
+  @media (min-width: 768px) {
+    .shell {
+      padding-inline: 2rem;
+    }
+  }
+
+  /*
+   * Section eyebrow. It carries the section's own unit or range — 20 Hz … 20 kHz, 1500 × 750 px
+   * — rather than a decorative number, so the label says something true about what follows.
+   */
+  .eyebrow {
+    font-family: var(--font-mono);
+    font-size: 0.6875rem;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--color-muted);
+  }
+
+  .rule {
+    border: 0;
+    border-top: 1px solid var(--color-line);
+  }
+
+  .panel {
+    background-color: var(--color-panel);
+    border: 1px solid var(--color-line);
+    border-radius: 4px;
+  }
+
+  /*
+   * Long-form documentation. Set once here rather than repeating utility strings on every
+   * paragraph in every docs page.
+   */
+  .doc {
+    max-width: 46rem;
+  }
+
+  .doc > h2 {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--color-sand);
+    margin-top: 3rem;
+    margin-bottom: 0.75rem;
+    scroll-margin-top: 5rem;
+  }
+
+  .doc > h3 {
+    font-size: 1.125rem;
+    font-weight: 600;
+    color: var(--color-text);
+    margin-top: 2rem;
+    margin-bottom: 0.5rem;
+    scroll-margin-top: 5rem;
+  }
+
+  .doc > p,
+  .doc > ul,
+  .doc > ol {
+    color: var(--color-muted);
+    margin-block: 0.85rem;
+  }
+
+  .doc > ul,
+  .doc > ol {
+    padding-left: 1.25rem;
+  }
+
+  .doc > ul {
+    list-style: square;
+  }
+
+  .doc > ol {
+    list-style: decimal;
+  }
+
+  .doc li {
+    margin-block: 0.4rem;
+  }
+
+  .doc li::marker {
+    color: var(--color-line);
+  }
+
+  .doc a {
+    color: var(--color-amber);
+    text-underline-offset: 4px;
+  }
+
+  .doc a:hover {
+    text-decoration: underline;
+  }
+
+  .doc strong {
+    color: var(--color-text);
+    font-weight: 600;
+  }
+
+  .doc code {
+    font-family: var(--font-mono);
+    font-size: 0.85em;
+    color: var(--color-text);
+  }
+
+  .doc table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-block: 1.25rem;
+    font-size: 0.875rem;
+  }
+
+  .doc th,
+  .doc td {
+    border: 1px solid var(--color-line);
+    padding: 0.55rem 0.75rem;
+    text-align: left;
+    vertical-align: top;
+    color: var(--color-muted);
+  }
+
+  .doc th {
+    color: var(--color-text);
+    font-weight: 600;
+    background-color: var(--color-panel);
+  }
+
+  /* Mono readouts: hashes, dB values, filter lines, pixel coordinates. */
+  .readout {
+    font-family: var(--font-mono);
+    font-size: 0.8125rem;
+    font-variant-numeric: tabular-nums;
+    word-break: break-all;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
 }

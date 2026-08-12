@@ -1,0 +1,17 @@
+{
+  "skins": [
+    {
+      "id": "seia-bar-shadow",
+      "title": "Seia bar (shadow)",
+      "author": "weejiaquan",
+      "authorUrl": "https://github.com/weejiaquan",
+      "origin": "original",
+      "description": "A wide illustrated plate with the bar recessed into the artwork: the lit pixels live between x=325 and x=1182, so full.png paints only the bar and every bit of decoration sits in empty.png. The percent number is centre-anchored over the right-hand card in the skin's own gold, with a warm sand outline so it stays readable over both the lit and unlit bar.",
+      "tags": ["bar", "illustrated", "fan art", "warm", "fill range"],
+      "installName": "seia-bar-shadow",
+      "directory": "skins/seia-bar-shadow",
+      "zip": "skins/seia-bar-shadow.zip",
+      "credit": "Artwork by the AorinEQ author, published here as the reference skin."
+    }
+  ]
+}
