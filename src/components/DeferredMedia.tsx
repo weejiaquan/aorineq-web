@@ -25,14 +25,20 @@ export function DeferredMedia({ capture }: { capture: LoadedCapture }) {
       <button
         type="button"
         onClick={() => setPlaying(true)}
-        className="flex w-full flex-col items-start justify-end bg-raised p-5 text-left transition-colors hover:bg-panel sm:p-7"
+        className="group flex w-full flex-col items-center justify-center gap-2 bg-raised px-6 text-center transition-colors hover:bg-panel"
         style={{ aspectRatio: `${capture.width} / ${capture.height}` }}
       >
-        <p className="eyebrow">
+        <span
+          aria-hidden
+          className="flex h-12 w-12 items-center justify-center rounded-full border border-line text-amber transition-colors group-hover:border-amber"
+        >
+          ▶
+        </span>
+        <span className="font-display text-lg font-semibold text-text">Play the capture</span>
+        <span className="eyebrow">
           {capture.width} × {capture.height} · {formatBytes(capture.bytes)} GIF
-        </p>
-        <p className="mt-1 font-display text-lg font-semibold text-text">Play the capture</p>
-        <p className="mt-1 max-w-md text-sm text-muted">{capture.alt}</p>
+        </span>
+        <span className="max-w-md text-sm text-muted">{capture.alt}</span>
       </button>
     </MediaFigure>
   );
