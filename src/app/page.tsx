@@ -47,10 +47,8 @@ async function Hero({ skin }: { skin: Awaited<ReturnType<typeof loadHeroSkin>> }
       <div className="shell grid gap-14 py-16 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.05fr)] lg:items-center lg:gap-16 lg:py-24">
         <div>
           <p className="eyebrow">Windows 10/11 · tray app · MIT</p>
-          <h1 className="mt-4 text-[clamp(2.5rem,6vw,4rem)] font-bold text-text">
-            Volume keys that
-            <br />
-            reach the DAC.
+          <h1 className="mt-4 max-w-[13ch] text-[clamp(2.5rem,6vw,4rem)] font-bold text-text">
+            Volume keys that reach the DAC.
           </h1>
           <p className="mt-6 max-w-xl text-lg text-muted">
             Some USB DACs advertise hardware volume and then ignore every command Windows sends
@@ -204,7 +202,9 @@ function Skins({
               it writes anything and always asks first — the link opens a confirmation naming
               the skin and the host.
             </p>
-            <CodeBlock label="Install link for this skin">{installLink}</CodeBlock>
+            <CodeBlock label="Install link for this skin" wrap>
+              {installLink}
+            </CodeBlock>
             <div className="mt-4">
               <SkinPlayer skin={skin} initialPercent={78} />
             </div>

@@ -137,7 +137,7 @@ export function EqPresetBuilder() {
 
           <div className="divide-y divide-line">
             {bands.map((band, index) => (
-              <div key={index} className="grid grid-cols-2 gap-3 p-4 sm:grid-cols-9 sm:items-end">
+              <div key={index} className="grid grid-cols-2 gap-3 p-4 sm:grid-cols-11 sm:items-end">
                 <label className="col-span-2 sm:col-span-3">
                   <span className="eyebrow">Type</span>
                   <select
@@ -177,12 +177,12 @@ export function EqPresetBuilder() {
                   max={MAX_Q}
                   step={0.01}
                   onChange={(q) => update(index, { q })}
-                  className="sm:col-span-1"
+                  className="sm:col-span-2"
                 />
                 <button
                   type="button"
                   onClick={() => setBands((c) => c.filter((_, i) => i !== index))}
-                  className="h-[38px] rounded-sm border border-line text-sm text-muted transition-colors hover:border-rust hover:text-rust sm:col-span-1"
+                  className="h-[38px] rounded-sm border border-line text-sm text-muted transition-colors hover:border-rust hover:text-rust sm:col-span-2"
                   aria-label={`Remove band ${index + 1}`}
                 >
                   Remove
@@ -233,10 +233,8 @@ export function EqPresetBuilder() {
             <textarea
               value={importText}
               onChange={(e) => setImportText(e.target.value)}
-              rows={4}
-              placeholder={`aorineq://apply-preset?type=eq&data=…
-
-or
+              rows={5}
+              placeholder={`A share link, or Equalizer APO text:
 
 Preamp: -6.1 dB
 Filter 1: ON PK Fc 3200 Hz Gain 2.6 dB Q 1.80`}
@@ -316,9 +314,7 @@ Filter 1: ON PK Fc 3200 Hz Gain 2.6 dB Q 1.80`}
           />
 
           <div className="panel overflow-hidden">
-            <div className="flex items-center justify-between border-b border-line px-4 py-2">
-              <p className="eyebrow">Equalizer APO ParametricEQ</p>
-            </div>
+            <p className="eyebrow border-b border-line px-4 py-2">Equalizer APO ParametricEQ</p>
             <pre className="overflow-x-auto px-4 py-3">
               <code className="font-mono text-[0.8125rem] leading-relaxed text-text">
                 {serializePreset(preset) || "No bands yet."}

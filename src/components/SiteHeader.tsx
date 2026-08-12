@@ -2,12 +2,20 @@ import Link from "next/link";
 
 import { GITHUB_URL, RELEASES_URL } from "@/lib/site";
 
+/**
+ * `from` is the breakpoint below which an item is dropped. A phone gets the two destinations
+ * that matter and the download; the rest appear as there is room, so the bar never has to
+ * scroll sideways.
+ */
 const NAV = [
-  { href: "/gallery", label: "Skins" },
-  { href: "/tools/skin-link", label: "Link builder" },
-  { href: "/tools/eq-preset", label: "EQ presets" },
-  { href: "/docs", label: "Docs" },
+  { href: "/gallery", label: "Skins", from: "" },
+  { href: "/tools/skin-link", label: "Link builder", from: "hidden md:block" },
+  { href: "/tools/eq-preset", label: "EQ presets", from: "hidden md:block" },
+  { href: "/docs", label: "Docs", from: "" },
 ];
+
+const LINK_CLASS =
+  "whitespace-nowrap rounded-sm px-2 py-1.5 text-sm text-muted transition-colors hover:text-text sm:px-2.5";
 
 export function SiteHeader() {
   return (
@@ -20,25 +28,22 @@ export function SiteHeader() {
           </span>
         </Link>
 
-        <nav aria-label="Main" className="flex items-center gap-1 overflow-x-auto">
+        <nav aria-label="Main" className="flex items-center gap-1">
           {NAV.map((item) => (
             <Link
               key={item.href}
               href={item.href}
-              className="whitespace-nowrap rounded-sm px-2.5 py-1.5 text-sm text-muted transition-colors hover:text-text"
+              className={`${LINK_CLASS} ${item.from}`}
             >
               {item.label}
             </Link>
           ))}
-          <a
-            href={GITHUB_URL}
-            className="ml-1 hidden whitespace-nowrap rounded-sm px-2.5 py-1.5 text-sm text-muted transition-colors hover:text-text sm:block"
-          >
+          <a href={GITHUB_URL} className={`${LINK_CLASS} hidden lg:block`}>
             GitHub
           </a>
           <a
             href={RELEASES_URL}
-            className="ml-2 whitespace-nowrap rounded-sm bg-amber px-3 py-1.5 text-sm font-medium text-ink transition-opacity hover:opacity-90"
+            className="ml-1 whitespace-nowrap rounded-sm bg-amber px-3 py-1.5 text-sm font-medium text-ink transition-opacity hover:opacity-90 sm:ml-2"
           >
             Download
           </a>

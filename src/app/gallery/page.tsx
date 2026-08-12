@@ -40,7 +40,8 @@ export default async function GalleryPage() {
         </div>
       </div>
 
-      <div className="mt-12 grid gap-8 lg:grid-cols-2">
+      {/* One skin gets a single readable column rather than half an empty grid. */}
+      <div className={`mt-12 grid gap-8 ${skins.length > 1 ? "lg:grid-cols-2" : "max-w-2xl"}`}>
         {skins.map((skin) => (
           <SkinCard key={skin.id} skin={skin} />
         ))}
