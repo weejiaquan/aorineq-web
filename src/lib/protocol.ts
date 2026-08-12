@@ -47,7 +47,7 @@ const INVALID_FILENAME_CHARS = /["<>|:*?\\/]/;
  * embeddings and isolates, plus C0/C1 controls. Zero-width joiners are deliberately absent:
  * that is how emoji names are spelled.
  */
-function isDeceptive(ch: string): boolean {
+export function isDeceptive(ch: string): boolean {
   const c = ch.codePointAt(0)!;
   return (
     (c <= 0x1f) ||
@@ -81,6 +81,27 @@ export function validateName(name: string, what: string): string | null {
     return `'${trimmed}' is a reserved Windows device name.`;
   }
   return null;
+}
+
+/**
+ * A string shortened to fit a display cap, ported from `FileNames.ForDisplay`.
+ *
+ * The cap counts TEXT ELEMENTS, not UTF-16 units, so it can never slice a surrogate pair or a
+ * combining sequence in half and leave a broken glyph on a page. An over-long value keeps
+ * `maxLength - 1` elements and ends in an ellipsis, so the reader can see it was cut.
+ */
+export function forDisplay(name: string, maxLength: number): string {
+  if (maxLength <= 0) return "";
+  if (name.length <= maxLength) return name; // code units are an upper bound on text elements
+  const graphemes = new Intl.Segmenter(undefined, { granularity: "grapheme" }).segment(name);
+  let kept = "";
+  let count = 0;
+  for (const { segment } of graphemes) {
+    if (count === maxLength - 1) return `${kept}…`; // more to come: leave room for the ellipsis
+    kept += segment;
+    count++;
+  }
+  return kept; // fewer text elements than the cap after all
 }
 
 export interface UrlCheck {

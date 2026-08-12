@@ -2,6 +2,8 @@ import { describe, expect, it } from "vitest";
 
 import {
   MAX_LINK_LENGTH,
+  forDisplay,
+  isDeceptive,
   buildApplyPresetHostedLink,
   buildApplyPresetInlineLink,
   buildAutoEqLink,
@@ -180,5 +182,68 @@ describe("fitsLinkLimit", () => {
   it("accepts a link at the limit and refuses one past it", () => {
     expect(fitsLinkLimit("a".repeat(MAX_LINK_LENGTH))).toBe(true);
     expect(fitsLinkLimit("a".repeat(MAX_LINK_LENGTH + 1))).toBe(false);
+  });
+});
+
+describe("isDeceptive", () => {
+  // Written as code points rather than literals: these characters are invisible or reorder the
+  // text around them, so a source file containing them could not be read or reviewed.
+  it("names the characters that let text lie about how it renders", () => {
+    const deceptive = [
+      0x00, 0x1f, // C0 controls
+      0x7f, 0x9f, // DEL and the C1 controls
+      0x200e, 0x200f, // left-to-right and right-to-left marks
+      0x202a, 0x202e, // bidi embeddings and overrides
+      0x2066, 0x2069, // bidi isolates
+    ];
+    for (const point of deceptive) {
+      const label = `U+${point.toString(16).padStart(4, "0")}`;
+      expect(isDeceptive(String.fromCodePoint(point)), label).toBe(true);
+    }
+  });
+
+  it("leaves ordinary text, emoji and the joiner that spells them alone", () => {
+    // The zero-width joiner (U+200D) is deliberately absent from the rule: it is how emoji are
+    // spelled, and dropping it would rewrite an author's name into a different one.
+    const ordinary = [0x61, 0x20, 0xe9, 0x3042, 0x200d, 0x1f600];
+    for (const point of ordinary) {
+      const label = `U+${point.toString(16).padStart(4, "0")}`;
+      expect(isDeceptive(String.fromCodePoint(point)), label).toBe(false);
+    }
+  });
+});
+
+describe("forDisplay", () => {
+  it("returns anything already inside the cap unchanged", () => {
+    expect(forDisplay("mika bar", 80)).toBe("mika bar");
+    expect(forDisplay("abcde", 5)).toBe("abcde");
+  });
+
+  it("ellipsizes past the cap, counting the ellipsis inside it", () => {
+    expect(forDisplay("abcdef", 5)).toBe("abcd…");
+    expect(forDisplay("abcdef", 5)).toHaveLength(5);
+  });
+
+  it("counts text elements, so a cap never splits a grapheme in half", () => {
+    // One family emoji is 8 UTF-16 units and 1 text element. A code-unit cap would cut a
+    // surrogate pair and leave a replacement box on a public page.
+    const family = "\u{1f468}‍\u{1f469}‍\u{1f467}";
+    expect(family).toHaveLength(8);
+    expect(forDisplay(family.repeat(5), 5)).toBe(`${family.repeat(4)}…`);
+    expect(forDisplay(family.repeat(2), 3)).toBe(family.repeat(2));
+  });
+
+  it("ellipsizes a value that exactly fills the cap, as the app does", () => {
+    // The app reserves the last slot for the ellipsis before it knows whether anything follows,
+    // so a value of exactly `maxLength` elements that is longer in code units loses its last
+    // one. Ported as-is: a credit must read the same here as it does in the skin picker.
+    expect(forDisplay("abcde", 5)).toBe("abcde"); // short in code units too: untouched
+    expect(forDisplay("ééééé", 5)).toBe("ééééé"); // 5 units, 5 elements: also untouched
+    expect(forDisplay("👍👍👍", 3)).toBe("👍👍…"); // 6 units, 3 elements: the cap bites
+  });
+
+  it("returns nothing when there is no room to say anything", () => {
+    expect(forDisplay("abc", 0)).toBe("");
+    expect(forDisplay("abc", -1)).toBe("");
   });
 });

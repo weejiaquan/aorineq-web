@@ -61,6 +61,7 @@ export function SkinPlayer({ skin, variant = "card", initialPercent = 42 }: Skin
         <SkinCanvas
           emptyUrl={skin.emptyUrl}
           fullUrl={skin.fullUrl}
+          mutedUrl={skin.mutedUrl}
           width={skin.width}
           height={skin.height}
           config={skin.config}
@@ -118,7 +119,11 @@ export function SkinPlayer({ skin, variant = "card", initialPercent = 42 }: Skin
             className="readout rounded-sm border border-line px-3 py-1.5 text-muted transition-colors hover:border-amber hover:text-amber"
             aria-pressed={muted}
           >
-            {muted ? "Unmute" : `Mute (dims to ${Math.round(skin.config.mutedDim * 100)}%)`}
+            {muted
+              ? "Unmute"
+              : skin.mutedUrl
+                ? "Mute (swaps in muted.png)"
+                : `Mute (dims to ${Math.round(skin.config.mutedDim * 100)}%)`}
           </button>
           <p className="readout text-muted">
             Drag the artwork or the rail. Range {skin.config.fillStartX}–{skin.config.fillEndX} px

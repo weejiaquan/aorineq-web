@@ -109,6 +109,8 @@ function SkinCard({ skin }: { skin: GallerySkin }) {
             <span className="text-text">{skin.author}</span>
           )}{" "}
           · {originLabel(skin.origin)}
+          {/* The author's own version string for their artwork, when they gave one. */}
+          {skin.version ? <> · version {skin.version}</> : null}
         </p>
 
         <p className="mt-4 flex-1 text-sm text-muted">{skin.description}</p>

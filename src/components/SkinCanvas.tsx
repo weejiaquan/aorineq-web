@@ -2,22 +2,30 @@
 
 import { useEffect, useRef, useState } from "react";
 
-import { alignedTextX, complementClip, fillWidth } from "@/lib/skin-math";
+import { alignedTextX } from "@/lib/skin-math";
+import { planSkinFrame, type SkinLayerName } from "@/lib/skin-frame";
 import { argbToCss, type SkinConfig } from "@/lib/skin";
 
 /**
  * Draws a skin exactly the way AorinEQ's OSD draws it.
  *
- * The compositing order is the app's: the full layer is clipped to a rectangle from x=0 to the
- * fill width, and the empty layer is clipped to the COMPLEMENT of the lit span so it never
- * stacks underneath a translucent full layer. Drawing happens at the artwork's own pixel
+ * Which layers appear, what they are clipped to and what number goes on top is decided by
+ * `planSkinFrame`, which is the port of the app's own compositing and is tested against it.
+ * This component only turns that plan into pixels. Drawing happens at the artwork's own pixel
  * resolution and the canvas is scaled with CSS, which is what the app does too — the percent
  * text's size and position are in image pixels, so any other approach would drift.
+ *
+ * The one thing the OSD draws that this does not is its mute badge, a fixed 20 px chip in
+ * window coordinates. This canvas has no window: it renders at image resolution and is scaled
+ * to whatever width the layout gives it, so a chip drawn here would be a different size than
+ * the app's on every skin. The player states mute in text beside the artwork instead.
  */
 
 export interface SkinCanvasProps {
   emptyUrl: string;
   fullUrl: string;
+  /** The optional muted-state layer. When present it replaces the artwork while muted. */
+  mutedUrl?: string | null;
   width: number;
   height: number;
   config: SkinConfig;
@@ -26,9 +34,12 @@ export interface SkinCanvasProps {
   className?: string;
 }
 
+type LoadedLayers = Partial<Record<SkinLayerName, HTMLImageElement>>;
+
 export function SkinCanvas({
   emptyUrl,
   fullUrl,
+  mutedUrl = null,
   width,
   height,
   config,
@@ -38,31 +49,35 @@ export function SkinCanvas({
 }: SkinCanvasProps) {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   /**
-   * The loaded pair carries the URLs it came from, so a render that happens between a prop
+   * The loaded set carries the URLs it came from, so a render that happens between a prop
    * change and the new images arriving draws nothing rather than the previous skin.
    */
-  const [layers, setLayers] = useState<{
-    empty: HTMLImageElement;
-    full: HTMLImageElement;
-    emptyUrl: string;
-    fullUrl: string;
-  } | null>(null);
+  const sourceKey = `${emptyUrl}|${fullUrl}|${mutedUrl ?? ""}`;
+  const [loaded, setLoaded] = useState<{ key: string; layers: LoadedLayers } | null>(null);
 
   useEffect(() => {
     let cancelled = false;
 
-    const load = (src: string) =>
-      new Promise<HTMLImageElement>((resolve, reject) => {
+    const load = (name: SkinLayerName, src: string) =>
+      new Promise<[SkinLayerName, HTMLImageElement]>((resolve, reject) => {
         const image = new Image();
         image.decoding = "async";
-        image.onload = () => resolve(image);
+        image.onload = () => resolve([name, image]);
         image.onerror = () => reject(new Error(`Could not load ${src}`));
         image.src = src;
       });
 
-    Promise.all([load(emptyUrl), load(fullUrl)])
-      .then(([empty, full]) => {
-        if (!cancelled) setLayers({ empty, full, emptyUrl, fullUrl });
+    const wanted: Array<[SkinLayerName, string]> = [
+      ["empty", emptyUrl],
+      ["full", fullUrl],
+    ];
+    if (mutedUrl) wanted.push(["muted", mutedUrl]);
+
+    Promise.all(wanted.map(([name, src]) => load(name, src)))
+      .then((pairs) => {
+        if (!cancelled) {
+          setLoaded({ key: sourceKey, layers: Object.fromEntries(pairs) as LoadedLayers });
+        }
       })
       .catch(() => {
         // A skin whose files are missing simply does not draw; there is nothing useful to
@@ -72,56 +87,45 @@ export function SkinCanvas({
     return () => {
       cancelled = true;
     };
-  }, [emptyUrl, fullUrl]);
+  }, [sourceKey, emptyUrl, fullUrl, mutedUrl]);
 
-  const current =
-    layers && layers.emptyUrl === emptyUrl && layers.fullUrl === fullUrl ? layers : null;
+  const layers = loaded?.key === sourceKey ? loaded.layers : null;
 
   useEffect(() => {
     const canvas = canvasRef.current;
-    if (!current || !canvas) return;
-    const { empty, full } = current;
+    if (!layers || !canvas) return;
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
 
     ctx.clearRect(0, 0, width, height);
 
-    const lit = fillWidth(percent, config.fillStartX, config.fillEndX);
+    const frame = planSkinFrame(config, percent, muted, Boolean(mutedUrl), width);
 
-    // Empty layer: full canvas when muted (the mute dim reads over the whole plate), otherwise
-    // only the regions the lit span does not cover.
-    ctx.save();
-    ctx.globalAlpha = muted ? config.mutedDim : 1;
-    if (!muted) {
-      ctx.beginPath();
-      for (const rect of complementClip(config.fillStartX, lit, width)) {
-        ctx.rect(rect.x, 0, rect.width, height);
-      }
-      ctx.clip();
-    }
-    ctx.drawImage(empty, 0, 0, width, height);
-    ctx.restore();
-
-    // Full layer: hidden while muted, otherwise clipped from the left edge to the fill width.
-    if (!muted) {
+    for (const entry of frame.layers) {
+      const image = layers[entry.layer];
+      if (!image) continue; // only planned for layers this skin ships, so never taken in practice
       ctx.save();
-      ctx.beginPath();
-      ctx.rect(0, 0, lit, height);
-      ctx.clip();
-      ctx.drawImage(full, 0, 0, width, height);
+      ctx.globalAlpha = entry.alpha;
+      if (entry.clip) {
+        ctx.beginPath();
+        for (const rect of entry.clip) ctx.rect(rect.x, 0, rect.width, height);
+        ctx.clip();
+      }
+      ctx.drawImage(image, 0, 0, width, height);
       ctx.restore();
     }
 
     const text = config.text;
-    if (text?.show) {
+    if (frame.label !== null && text) {
       ctx.save();
       // The app's unbold baseline is SemiBold, so a plain {show,x,y} skin keeps the weight it
       // has always had.
       ctx.font = `${text.bold ? 700 : 600} ${text.fontSize}px "${text.fontFamily}", "Segoe UI", sans-serif`;
       ctx.textBaseline = "top";
+      // x is the ANCHOR under the skin's alignment, not the left edge; the measured width
+      // changes with the digit count, so the offset is recomputed on every draw.
       ctx.textAlign = "left";
-      const label = muted ? "0" : String(percent);
-      const measured = ctx.measureText(label).width;
+      const measured = ctx.measureText(frame.label).width;
       const x = alignedTextX(text.x, measured, text.align);
 
       if (text.shadowColor) {
@@ -136,17 +140,17 @@ export function SkinCanvas({
         ctx.strokeStyle = argbToCss(text.outlineColor);
         ctx.lineWidth = text.outlineWidth;
         ctx.lineJoin = "round";
-        ctx.strokeText(label, x, text.y);
+        ctx.strokeText(frame.label, x, text.y);
       }
       ctx.shadowColor = "transparent";
       ctx.shadowBlur = 0;
       ctx.shadowOffsetX = 0;
       ctx.shadowOffsetY = 0;
       ctx.fillStyle = argbToCss(text.color);
-      ctx.fillText(label, x, text.y);
+      ctx.fillText(frame.label, x, text.y);
       ctx.restore();
     }
-  }, [current, percent, muted, width, height, config]);
+  }, [layers, percent, muted, mutedUrl, width, height, config]);
 
   return (
     <canvas
@@ -158,7 +162,7 @@ export function SkinCanvas({
       role="img"
       aria-label={
         muted
-          ? "Skin preview, muted"
+          ? `Skin preview, muted at ${percent} percent`
           : `Skin preview at ${percent} percent`
       }
     />

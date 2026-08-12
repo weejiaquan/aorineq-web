@@ -5,7 +5,13 @@ import path from "node:path";
 import { describe, expect, it } from "vitest";
 
 import { readPngSize } from "@/lib/png";
-import { parseManifest, parseManifestEntry, originLabel } from "@/lib/skins-manifest";
+import { parseSkinMeta } from "@/lib/skin-meta";
+import {
+  parseManifest,
+  parseManifestEntry,
+  originLabel,
+  resolveListing,
+} from "@/lib/skins-manifest";
 import { loadGallerySkins } from "@/lib/skins-server";
 import manifestJson from "@/data/skins.json";
 
@@ -86,6 +92,75 @@ describe("parseManifest", () => {
   });
 });
 
+/** Everything a skin can say about itself, so a test can remove one field at a time. */
+const FULL_META = {
+  title: "mika bar",
+  author: "lychwee",
+  description: "A pink bar.",
+  version: "1",
+  tags: ["pink", "bar"],
+  sourceUrl: "https://example.com/mika",
+};
+
+describe("resolveListing", () => {
+  const ENTRY = parseManifestEntry({ ...VALID, authorUrl: "https://example.com/someone" });
+  const BARE = parseManifestEntry({
+    id: "mika-bar",
+    origin: "original",
+    installName: "mika-bar",
+    directory: "skins/mika-bar",
+    zip: "skins/mika-bar.zip",
+  });
+  const META = parseSkinMeta(FULL_META);
+
+  it("credits the skin from its own skin.json when the manifest says nothing", () => {
+    expect(resolveListing(BARE, META)).toEqual({
+      title: "mika bar",
+      author: "lychwee",
+      authorUrl: "https://example.com/mika",
+      description: "A pink bar.",
+      tags: ["pink", "bar"],
+      version: "1",
+    });
+  });
+
+  it("lets the manifest override, because a person reviewed those words", () => {
+    const listing = resolveListing(ENTRY, META);
+    expect(listing.title).toBe("Neon bar");
+    expect(listing.author).toBe("someone");
+    expect(listing.description).toBe("A bar.");
+    expect(listing.tags).toEqual(["bar"]);
+  });
+
+  it("fills only the gaps, field by field", () => {
+    const entry = parseManifestEntry({ ...VALID, id: "mika-bar", title: undefined });
+    const listing = resolveListing(entry, META);
+    expect(listing.title).toBe("mika bar"); // from the skin
+    expect(listing.author).toBe("someone"); // from the manifest
+  });
+
+  it("takes the version from the skin only — it is the author's claim about their work", () => {
+    expect(resolveListing(ENTRY, parseSkinMeta({})).version).toBeNull();
+    expect(resolveListing(ENTRY, META).version).toBe("1");
+  });
+
+  it("falls back to the skin's own sourceUrl for the byline link", () => {
+    expect(resolveListing(ENTRY, META).authorUrl).toBe("https://example.com/someone");
+    expect(resolveListing(BARE, META).authorUrl).toBe("https://example.com/mika");
+    const noSource = parseSkinMeta({ ...FULL_META, sourceUrl: undefined });
+    expect(resolveListing(BARE, noSource).authorUrl).toBeUndefined();
+  });
+
+  it("refuses to render a card whose copy neither source supplies", () => {
+    for (const field of ["title", "author", "description", "tags"] as const) {
+      const partial = parseSkinMeta({ ...FULL_META, [field]: undefined });
+      expect(() => resolveListing(BARE, partial), field).toThrow(
+        new RegExp(`${field} is in neither the manifest entry nor`),
+      );
+    }
+  });
+});
+
 describe("originLabel", () => {
   it("labels each origin the way the card shows it", () => {
     expect(originLabel("original")).toBe("Original artwork");
@@ -119,6 +194,67 @@ describe("loadGallerySkins", () => {
     expect(seia.config.text?.show).toBe(true);
     expect(seia.config.text?.align).toBe("center");
     expect(seia.config.text?.color).toBe("#FFFEC707");
+  });
+
+  it("credits mika-bar from the skin's own skin.json, not from the manifest", async () => {
+    const [mika] = (await loadGallerySkins()).filter((s) => s.id === "mika-bar");
+    const entry = parseManifest(manifestJson).find((e) => e.id === "mika-bar")!;
+    // The manifest deliberately does not spell these; the card would be crediting the person
+    // who committed the entry rather than the person who drew the skin.
+    expect(entry.title).toBeUndefined();
+    expect(entry.author).toBeUndefined();
+    expect(mika.title).toBe("mika bar");
+    expect(mika.author).toBe("lychwee");
+    expect(mika.version).toBe("1");
+  });
+
+  it("takes mika-bar's numbers from the artwork it ships", async () => {
+    const [mika] = (await loadGallerySkins()).filter((s) => s.id === "mika-bar");
+    expect(mika.width).toBe(1672);
+    expect(mika.height).toBe(941);
+    expect(mika.config.fillStartX).toBe(427);
+    expect(mika.config.fillEndX).toBe(1249);
+    expect(mika.config.scale).toBe(0.3);
+    expect(mika.config.text?.show).toBe(true);
+    expect(mika.config.text?.align).toBe("center");
+    expect(mika.config.text?.x).toBe(1375);
+    expect(mika.config.text?.fontFamily).toBe("Calibri");
+    expect(mika.config.text?.fontSize).toBe(80);
+  });
+
+  it("offers the muted layer only for the skin that ships one", async () => {
+    const skins = await loadGallerySkins();
+    const mika = skins.find((s) => s.id === "mika-bar")!;
+    const seia = skins.find((s) => s.id === "seia-bar-shadow")!;
+    expect(mika.mutedUrl).toBe("/skins/mika-bar/muted.png");
+    expect(seia.mutedUrl).toBeNull();
+  });
+
+  it("serves every URL a card renders from a file that exists", async () => {
+    for (const skin of await loadGallerySkins()) {
+      const urls = [skin.emptyUrl, skin.fullUrl, skin.zipUrl, skin.mutedUrl].filter(
+        (u): u is string => u !== null,
+      );
+      for (const url of urls) {
+        const file = path.join(process.cwd(), "public", ...url.slice(1).split("/"));
+        await expect(readFile(file), `${skin.id}: ${url}`).resolves.toBeDefined();
+      }
+    }
+  });
+
+  it("gives every layer of every skin the same frame size, which the app requires", async () => {
+    for (const skin of await loadGallerySkins()) {
+      const layers = [skin.emptyUrl, skin.fullUrl, skin.mutedUrl].filter(
+        (u): u is string => u !== null,
+      );
+      for (const url of layers) {
+        const bytes = await readFile(path.join(process.cwd(), "public", ...url.slice(1).split("/")));
+        expect(readPngSize(bytes), `${skin.id}: ${url}`).toEqual({
+          width: skin.width,
+          height: skin.height,
+        });
+      }
+    }
   });
 
   it("pins a digest that matches the zip this site actually serves", async () => {

@@ -12,6 +12,15 @@
       "directory": "skins/seia-bar-shadow",
       "zip": "skins/seia-bar-shadow.zip",
       "credit": "Artwork by the AorinEQ author, published here as the reference skin."
+    },
+    {
+      "id": "mika-bar",
+      "origin": "original",
+      "description": "A 1672 px plate whose bar runs from x=427 to x=1249, leaving illustration on both sides of it. The percent number is centre-anchored at x=1375 in Calibri, so it stays pinned over the same spot as it grows from one digit to three rather than drifting right. It is also the first listing to ship a muted.png: mute this preview and the whole plate swaps to that layer, which is what the OSD does instead of dimming when a skin provides one. Its title, author and version on this card are read from the skin's own skin.json, not typed into the gallery.",
+      "tags": ["bar", "illustrated", "character art", "pink", "fill range", "muted layer"],
+      "installName": "mika-bar",
+      "directory": "skins/mika-bar",
+      "zip": "skins/mika-bar.zip"
     }
   ]
 }
