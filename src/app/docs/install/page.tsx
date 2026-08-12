@@ -3,18 +3,12 @@ import Link from "next/link";
 
 import { CodeBlock } from "@/components/CodeBlock";
 import { DownloadCta } from "@/components/DownloadCta";
-import {
-  EAPO_URL,
-  EXE_ASSET_NAME,
-  LATEST_RELEASE_URL,
-  SHA256_ASSET_NAME,
-  SHA256_URL,
-} from "@/lib/site";
+import { DOWNLOADS, EAPO_URL, INSTALLER, LATEST_RELEASE_URL, PORTABLE } from "@/lib/site";
 
 export const metadata: Metadata = {
   title: "Install and setup",
   description:
-    "Download, first run, and exactly when Equalizer APO is required — replacing Windows volume does not need it, driving the APO preamp does.",
+    "Installer or portable build, first run, and exactly when Equalizer APO is required — replacing Windows volume does not need it, driving the APO preamp does.",
 };
 
 export default function InstallDocsPage() {
@@ -23,26 +17,113 @@ export default function InstallDocsPage() {
       <p className="eyebrow">Getting started</p>
       <h1 className="mt-3 text-4xl font-bold text-text">Install and setup</h1>
       <p className="mt-5 text-lg text-muted">
-        AorinEQ is one self-contained exe. There is no installer and no .NET prerequisite. What
-        you do next depends on which of the two volume modes you pick on first run.
+        AorinEQ comes two ways: an installer that never asks for administrator rights, and a
+        single portable exe you just run. Neither needs .NET. What you do after that depends on
+        which of the two volume modes you pick on first run.
       </p>
 
       <div className="my-9">
         <DownloadCta />
       </div>
 
-      <h2 id="smartscreen">&ldquo;Windows protected your PC&rdquo;</h2>
+      <h2 id="which">Installer or portable?</h2>
       <p>
-        Expect this. The first time you run <code>{EXE_ASSET_NAME}</code>, Windows SmartScreen
-        shows a blue box that says <strong>Windows protected your PC</strong> and offers only a
-        <strong> Don&apos;t run</strong> button. Click <strong>More info</strong>, then{" "}
-        <strong>Run anyway</strong>. It appears once per build.
+        Take the installer unless you have a reason not to. It is the same application either
+        way — same features, same settings folder, same automatic updates — so this is only a
+        question of how the file gets onto your disk and how you take it off again.
+      </p>
+
+      <table>
+        <thead>
+          <tr>
+            <th></th>
+            <th>
+              <code>{INSTALLER.assetName}</code>
+              <br />
+              recommended
+            </th>
+            <th>
+              <code>{PORTABLE.assetName}</code>
+              <br />
+              portable
+            </th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>
+              <strong>Where it lands</strong>
+            </td>
+            <td>
+              A folder under <code>%LOCALAPPDATA%</code>, for your user account only.
+            </td>
+            <td>Wherever you put the file.</td>
+          </tr>
+          <tr>
+            <td>
+              <strong>Administrator</strong>
+            </td>
+            <td>Never asked. Installing takes a few seconds and raises no UAC prompt.</td>
+            <td>Never asked.</td>
+          </tr>
+          <tr>
+            <td>
+              <strong>Start Menu and Apps &amp; Features</strong>
+            </td>
+            <td>
+              A Start Menu shortcut, and a normal entry in Apps &amp; Features with a working
+              uninstaller. Reinstalling replaces the entry rather than adding a second one.
+            </td>
+            <td>Neither. It is one file, so nothing is registered anywhere.</td>
+          </tr>
+          <tr>
+            <td>
+              <strong>Updates</strong>
+            </td>
+            <td>Automatic, in place — the install folder stays writable by you.</td>
+            <td>Automatic, in place, as long as its folder is writable.</td>
+          </tr>
+          <tr>
+            <td>
+              <strong>Removing it</strong>
+            </td>
+            <td>Uninstall from Apps &amp; Features. Your skins, presets and settings are kept.</td>
+            <td>Delete the file.</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <p>
+        The portable build is for people who want a single file and nothing else: carrying it on
+        a USB stick, running it on a machine you do not administer, or keeping everything inside
+        one folder you control. If none of that describes you, the installer is less work.
       </p>
       <p>
-        The cause is not a detection of anything. AorinEQ is not code-signed — an
-        Authenticode certificate costs more per year than this app charges ever — and SmartScreen
-        warns about every unsigned executable it has not seen often enough. A signature would
-        only prove who published the file, which is what the digest below proves instead.
+        The installer&apos;s folder is <code>%LOCALAPPDATA%\Programs\AorinEQ</code> — under your
+        own profile, which is why it never needs administrator rights and why the app can still
+        replace its own exe when it updates.
+      </p>
+      <p>
+        <strong>Both update themselves.</strong> Whichever you take, AorinEQ checks GitHub
+        Releases and replaces its own exe in place — the installer does not opt you out of that,
+        and the portable build does not miss out on it.
+      </p>
+
+      <h2 id="smartscreen">&ldquo;Windows protected your PC&rdquo;</h2>
+      <p>
+        Expect this, and expect it for <em>both</em> downloads. The first time you run{" "}
+        <code>{INSTALLER.assetName}</code> or <code>{PORTABLE.assetName}</code>, Windows
+        SmartScreen shows a blue box that says <strong>Windows protected your PC</strong> and
+        offers only a <strong>Don&apos;t run</strong> button. Click <strong>More info</strong>,
+        then <strong>Run anyway</strong>. It appears once per build.
+      </p>
+      <p>
+        The cause is not a detection of anything. Neither file is code-signed — an Authenticode
+        certificate costs more per year than this app charges ever — and SmartScreen warns about
+        every unsigned executable it has not seen often enough. Having an installer changes
+        nothing here: an unsigned setup exe gets the same blue box as an unsigned app. A
+        signature would only prove who published the file, which is what the digests below prove
+        instead.
       </p>
       <p>
         If your browser blocks the download itself rather than the run, it is the same reasoning:
@@ -103,8 +184,10 @@ export default function InstallDocsPage() {
       <h2 id="first-run">First run</h2>
       <ol>
         <li>
-          Run <code>AorinEQ.exe</code>. Keep it wherever you want it to live — the auto-updater
-          replaces the file in place, so a folder you can write to is a good idea.
+          Run <code>{INSTALLER.assetName}</code>; it finishes in a few seconds without asking
+          for administrator rights, and AorinEQ is then in the Start Menu. If you took{" "}
+          <code>{PORTABLE.assetName}</code> instead, run it from wherever you want it to live —
+          the auto-updater replaces the file in place, so pick a folder you can write to.
         </li>
         <li>Choose a volume mode, and whether to keep the app updated automatically.</li>
         <li>
@@ -153,41 +236,61 @@ export default function InstallDocsPage() {
 
       <h2 id="verify">Verifying the download</h2>
       <p>
-        This is the answer to the SmartScreen warning above. Every release ships{" "}
-        <a href={SHA256_URL}>
-          <code>{SHA256_ASSET_NAME}</code>
-        </a>{" "}
-        beside the exe, and the app&apos;s own updater refuses to install a build whose digest
-        does not match it. Hold a manual download to the same rule — in PowerShell, in the folder
-        you saved it to:
+        This is the answer to the SmartScreen warning above. Every release publishes a digest
+        beside each file —{" "}
+        {DOWNLOADS.map((asset, index) => (
+          <span key={asset.assetName}>
+            {index > 0 ? " and " : ""}
+            <a href={asset.sha256Url}>
+              <code>{asset.sha256AssetName}</code>
+            </a>
+          </span>
+        ))}{" "}
+        — and the app&apos;s own updater refuses to install a build whose digest does not match.
+        Hold a manual download to the same rule. In PowerShell, in the folder you saved it to,
+        run the line for the file you actually downloaded:
       </p>
       <CodeBlock label="PowerShell">
-        {`Get-FileHash .\\${EXE_ASSET_NAME} -Algorithm SHA256`}
+        {DOWNLOADS.map((asset) => `Get-FileHash .\\${asset.assetName} -Algorithm SHA256`).join(
+          "\n",
+        )}
       </CodeBlock>
       <p>
-        Compare the 64 characters it prints with the digest shown on the download button above,
-        with the sidecar file, or with the digest on the{" "}
-        <a href={LATEST_RELEASE_URL}>release page</a>. All three are the same value. If they
-        differ, do not run the file.
+        Compare the 64 characters it prints with the digest shown for that same file on the
+        download panel above, with its sidecar, or with the digest on the{" "}
+        <a href={LATEST_RELEASE_URL}>release page</a>. All three are the same value. Compare it
+        against the <em>other</em> file&apos;s digest and it will not match, because the two are
+        different files. If the digest for your file differs, do not run it.
       </p>
 
       <h2 id="updates">Updates</h2>
       <p>
-        AorinEQ checks GitHub Releases at startup and every 24 hours. An update is verified
-        against the release digest, then applied in place: the running exe is renamed to{" "}
-        <code>AorinEQ.exe.old</code>, the new build takes its path, and the app restarts. When
-        running as administrator it finishes on the next start instead, to avoid springing a UAC
-        prompt on you. If the folder is not writable, a tray balloon links to the release page.
-        Opt out at first run or in Settings.
+        Both builds do this. AorinEQ checks GitHub Releases at startup and every 24 hours. An
+        update is verified against the release digest, then applied in place: the running exe is
+        renamed to <code>{PORTABLE.assetName}.old</code>, the new build takes its path, and the
+        app restarts. The installer deliberately puts the app under{" "}
+        <code>%LOCALAPPDATA%</code> rather than <code>Program Files</code> so that this keeps
+        working without elevation. When running as administrator it finishes on the next start
+        instead, to avoid springing a UAC prompt on you. If the folder is not writable, a tray
+        balloon links to the release page. Opt out at first run or in Settings.
       </p>
 
       <h2 id="uninstall">Removing it</h2>
       <p>
-        Quit from the tray menu and delete the exe. Normal volume-key handling returns the
-        moment the app exits. Skins, presets and settings live in{" "}
-        <code>%APPDATA%\AorinEQ</code>; the Equalizer APO include line and{" "}
-        <code>aorineq.txt</code> stay in the APO config folder until you remove them, and an
-        <code> aorineq.txt</code> with no app running is a preamp of 0 dB — audibly nothing.
+        If you used the installer: quit from the tray menu, then uninstall AorinEQ from{" "}
+        <strong>Settings → Apps → Installed apps</strong>, as you would any other program. It
+        removes the program folder and the Start Menu shortcut and <strong>keeps</strong> your
+        skins, presets and settings, so reinstalling later picks up exactly where you left off.
+        Delete <code>%APPDATA%\AorinEQ</code> by hand if you want those gone too.
+      </p>
+      <p>
+        If you used the portable build: quit from the tray menu and delete the exe.
+      </p>
+      <p>
+        Either way, normal volume-key handling returns the moment the app exits. The Equalizer
+        APO include line and <code>aorineq.txt</code> stay in the APO config folder until you
+        remove them, and an <code>aorineq.txt</code> with no app running is a preamp of 0 dB —
+        audibly nothing.
       </p>
 
       <h2 id="next">Next</h2>

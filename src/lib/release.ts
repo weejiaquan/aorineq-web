@@ -1,23 +1,23 @@
-import { EXE_ASSET_NAME, GITHUB_REPO, SHA256_URL } from "./site";
+import { GITHUB_REPO, type ReleaseAsset } from "./site";
 
 /**
- * Facts about the latest AorinEQ release, for the copy that sits beside the download button.
+ * Facts about the latest AorinEQ release, for the copy that sits beside the download buttons.
  *
- * The button itself never waits on any of this — it points at `DOWNLOAD_URL`, which GitHub
- * resolves on its own side. What is fetched here is only the honest labelling: which version
- * you are about to get, how big it is, and the digest the app's own updater checks before it
- * replaces a running exe. GitHub rate-limits the API per IP, so every call is cached for an
- * hour and every failure degrades to showing less, never to a broken link.
+ * The buttons themselves never wait on any of this — they point at the asset URLs, which
+ * GitHub resolves on its own side. What is fetched here is only the honest labelling: which
+ * version you are about to get, how big each file is, and the digest the app's own updater
+ * checks before it replaces a running exe. GitHub rate-limits the API per IP, so every call is
+ * cached for an hour and every failure degrades to showing less, never to a broken link.
  *
- * The digest is read from the `.sha256` sidecar by the same name-addressed URL the exe uses,
- * not from the API's asset list, so the two always describe the same file.
+ * Each digest is read from that file's own `.sha256` sidecar, by the same name-addressed URL
+ * the download uses — so a digest can only ever describe the file it is shown under.
  */
 
 export interface LatestRelease {
-  /** The release tag, e.g. `v1.4.0`. */
+  /** The release tag, e.g. `v3.3.0`. */
   tag: string;
-  /** Size of AorinEQ.exe in bytes, or null if the release has no asset under that name. */
-  exeSize: number | null;
+  /** Byte size of every asset in the release, keyed by exact filename. */
+  sizes: Record<string, number>;
 }
 
 interface GithubAsset {
@@ -27,13 +27,27 @@ interface GithubAsset {
 
 const REVALIDATE_SECONDS = 3600;
 
-/** The size of the exe asset in a release payload's asset list, by exact name. */
-function exeSizeOf(assets: unknown): number | null {
-  if (!Array.isArray(assets)) return null;
-  for (const raw of assets as GithubAsset[]) {
-    if (raw.name === EXE_ASSET_NAME && typeof raw.size === "number") return raw.size;
+/** Reads the release payload GitHub returns, keeping only what the page labels things with. */
+export function parseLatestRelease(json: unknown): LatestRelease | null {
+  if (typeof json !== "object" || json === null) return null;
+  const { tag_name: tag, assets } = json as { tag_name?: unknown; assets?: unknown };
+  if (typeof tag !== "string" || tag === "") return null;
+
+  const sizes: Record<string, number> = {};
+  if (Array.isArray(assets)) {
+    for (const raw of assets) {
+      if (typeof raw !== "object" || raw === null) continue;
+      const { name, size } = raw as GithubAsset;
+      if (typeof name === "string" && typeof size === "number") sizes[name] = size;
+    }
   }
-  return null;
+  return { tag, sizes };
+}
+
+/** The published size of one asset, or null when the release does not carry it under that name. */
+export function assetSize(release: LatestRelease | null, asset: ReleaseAsset): number | null {
+  const size = release?.sizes[asset.assetName];
+  return typeof size === "number" ? size : null;
 }
 
 /** A `.sha256` sidecar is usually `<digest>  <filename>`; keep only the digest. */
@@ -55,18 +69,16 @@ export async function fetchLatestRelease(): Promise<LatestRelease | null> {
       },
     );
     if (!response.ok) return null;
-    const json = (await response.json()) as { tag_name?: unknown; assets?: unknown };
-    if (typeof json.tag_name !== "string") return null;
-    return { tag: json.tag_name, exeSize: exeSizeOf(json.assets) };
+    return parseLatestRelease(await response.json());
   } catch {
     return null;
   }
 }
 
-/** The SHA-256 of the exe the download button hands out, or null if the sidecar is unreadable. */
-export async function fetchLatestDigest(): Promise<string | null> {
+/** The SHA-256 of one download, from that download's own sidecar, or null if unreadable. */
+export async function fetchAssetDigest(asset: ReleaseAsset): Promise<string | null> {
   try {
-    const response = await fetch(SHA256_URL, {
+    const response = await fetch(asset.sha256Url, {
       headers: { "User-Agent": "aorineq-web" },
       next: { revalidate: REVALIDATE_SECONDS },
     });

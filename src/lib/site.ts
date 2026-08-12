@@ -9,15 +9,6 @@ export const LATEST_RELEASE_URL = `${GITHUB_URL}/releases/latest`;
 export const ISSUES_URL = `${GITHUB_URL}/issues`;
 
 /**
- * The exact filenames a release must publish. `latestAssetUrl` addresses an asset by name
- * rather than by tag, so a release that renames the exe breaks every download button on this
- * site silently — the link 404s and nothing here can tell. Renaming these is a release-process
- * change, not a website change.
- */
-export const EXE_ASSET_NAME = "AorinEQ.exe";
-export const SHA256_ASSET_NAME = `${EXE_ASSET_NAME}.sha256`;
-
-/**
  * A direct link to one asset of whatever release is newest.
  *
  * GitHub resolves `/releases/latest/download/<name>` server-side and answers with the file
@@ -28,10 +19,51 @@ export function latestAssetUrl(assetName: string): string {
   return `${GITHUB_URL}/releases/latest/download/${encodeURIComponent(assetName)}`;
 }
 
-/** The one URL every primary download control uses. */
-export const DOWNLOAD_URL = latestAssetUrl(EXE_ASSET_NAME);
-/** The checksum sidecar for the same build, for readers who want to verify before running. */
-export const SHA256_URL = latestAssetUrl(SHA256_ASSET_NAME);
+/** One downloadable file, paired with the checksum sidecar published beside it. */
+export interface ReleaseAsset {
+  /** The exact filename the release publishes. */
+  assetName: string;
+  /** The sidecar's filename, always the asset's name plus `.sha256`. */
+  sha256AssetName: string;
+  /** Direct link to the file. */
+  url: string;
+  /** Direct link to *this* file's own digest — never another asset's. */
+  sha256Url: string;
+}
+
+/**
+ * Names a release asset and its sidecar together, so a digest can never be shown under the
+ * wrong filename: everything about one download is derived from the one name given here.
+ *
+ * A release that renames a file breaks its download button on this site silently — the link
+ * 404s and nothing here can tell. Renaming these is a release-process change, not a website
+ * change.
+ */
+function releaseAsset(assetName: string): ReleaseAsset {
+  const sha256AssetName = `${assetName}.sha256`;
+  return {
+    assetName,
+    sha256AssetName,
+    url: latestAssetUrl(assetName),
+    sha256Url: latestAssetUrl(sha256AssetName),
+  };
+}
+
+/**
+ * The recommended download: a per-user installer that needs no administrator rights, adds a
+ * Start Menu entry and an uninstaller, and installs somewhere the app can still update itself.
+ */
+export const INSTALLER = releaseAsset("AorinEQ-Setup.exe");
+
+/**
+ * The same app as a single file that is simply run. Kept as a first-class option for people
+ * who want nothing written to their machine, or who run it off a USB stick.
+ */
+export const PORTABLE = releaseAsset("AorinEQ.exe");
+
+/** Both downloads, in the order they are offered — installer first. */
+export const DOWNLOADS: readonly ReleaseAsset[] = [INSTALLER, PORTABLE];
+
 export const EAPO_URL = "https://equalizerapo.com";
 export const AUTOEQ_URL = "https://github.com/jaakkopasanen/AutoEq";
 

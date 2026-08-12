@@ -3,22 +3,23 @@ import path from "node:path";
 
 import { describe, expect, it } from "vitest";
 
+import { assetSize, parseLatestRelease } from "@/lib/release";
 import {
-  DOWNLOAD_URL,
-  EXE_ASSET_NAME,
+  DOWNLOADS,
   GITHUB_URL,
+  INSTALLER,
   LATEST_RELEASE_URL,
+  PORTABLE,
   RELEASES_URL,
-  SHA256_ASSET_NAME,
-  SHA256_URL,
   latestAssetUrl,
 } from "@/lib/site";
 
 /**
- * The download link is the one thing on this site a visitor must not have to think about, so
- * it is built in exactly one place. These tests pin the shape of that URL and then walk the
- * real source tree to prove nothing else builds its own — a hardcoded copy would keep working
- * until the day it silently pointed at an old release.
+ * The download links are the one thing on this site a visitor must not have to think about, so
+ * they are built in exactly one place. These tests pin the shape of those URLs, prove the two
+ * builds cannot borrow each other's digest, and then walk the real source tree to prove nothing
+ * else builds its own — a hardcoded copy would keep working until the day it silently pointed
+ * at an old release.
  */
 
 const SRC = path.join(process.cwd(), "src");
@@ -59,19 +60,35 @@ describe("latestAssetUrl", () => {
 });
 
 describe("the published asset URLs", () => {
-  it("are the two links GitHub serves for the current release", () => {
-    expect(DOWNLOAD_URL).toBe(
-      "https://github.com/weejiaquan/aorineq/releases/latest/download/AorinEQ.exe",
-    );
-    expect(SHA256_URL).toBe(
-      "https://github.com/weejiaquan/aorineq/releases/latest/download/AorinEQ.exe.sha256",
-    );
+  const base = "https://github.com/weejiaquan/aorineq/releases/latest/download";
+
+  it("are the four links GitHub serves for the current release", () => {
+    expect(INSTALLER.url).toBe(`${base}/AorinEQ-Setup.exe`);
+    expect(INSTALLER.sha256Url).toBe(`${base}/AorinEQ-Setup.exe.sha256`);
+    expect(PORTABLE.url).toBe(`${base}/AorinEQ.exe`);
+    expect(PORTABLE.sha256Url).toBe(`${base}/AorinEQ.exe.sha256`);
   });
 
-  it("names the checksum sidecar after the exe, so the two cannot drift apart", () => {
-    expect(EXE_ASSET_NAME).toBe("AorinEQ.exe");
-    expect(SHA256_ASSET_NAME).toBe(`${EXE_ASSET_NAME}.sha256`);
-    expect(SHA256_URL).toBe(`${DOWNLOAD_URL}.sha256`);
+  it("offers the installer first, then the portable build", () => {
+    expect(DOWNLOADS).toEqual([INSTALLER, PORTABLE]);
+  });
+
+  it("names each checksum sidecar after its own file, so the two cannot drift apart", () => {
+    for (const asset of DOWNLOADS) {
+      expect(asset.sha256AssetName).toBe(`${asset.assetName}.sha256`);
+      expect(asset.sha256Url).toBe(`${asset.url}.sha256`);
+    }
+  });
+
+  it("never lets one build's digest be reached through the other's name", () => {
+    // The bug this guards: an installer button labelled with the portable exe's hash. Every
+    // field of a download is derived from its own filename, so the two share no URL at all.
+    expect(INSTALLER.assetName).not.toBe(PORTABLE.assetName);
+    expect(INSTALLER.sha256Url).not.toBe(PORTABLE.sha256Url);
+    expect(INSTALLER.sha256Url).toContain(INSTALLER.assetName);
+    expect(PORTABLE.sha256Url).not.toContain(INSTALLER.assetName);
+    // AorinEQ.exe is a substring of AorinEQ-Setup.exe.sha256 nowhere; check the reverse too.
+    expect(INSTALLER.url).not.toContain(`/${PORTABLE.assetName}`);
   });
 
   it("keeps the human release pages distinct from the download itself", () => {
@@ -80,6 +97,70 @@ describe("the published asset URLs", () => {
     for (const page of [RELEASES_URL, LATEST_RELEASE_URL]) {
       expect(page).not.toContain("/download/");
     }
+  });
+});
+
+describe("reading the release GitHub publishes", () => {
+  /** A payload shaped like the real v3.3.0 one, sizes included. */
+  const payload = {
+    tag_name: "v3.3.0",
+    assets: [
+      { name: "AorinEQ-Setup.exe", size: 69282488 },
+      { name: "AorinEQ-Setup.exe.sha256", size: 83 },
+      { name: "AorinEQ.exe", size: 74337460 },
+      { name: "AorinEQ.exe.sha256", size: 77 },
+    ],
+  };
+
+  it("keeps the tag and the size of every named asset", () => {
+    const release = parseLatestRelease(payload);
+    expect(release?.tag).toBe("v3.3.0");
+    expect(assetSize(release, INSTALLER)).toBe(69282488);
+    expect(assetSize(release, PORTABLE)).toBe(74337460);
+  });
+
+  it("gives each build its own size and never the other's", () => {
+    const release = parseLatestRelease(payload);
+    expect(assetSize(release, INSTALLER)).not.toBe(assetSize(release, PORTABLE));
+  });
+
+  it("reports no size for an asset the release did not publish", () => {
+    const release = parseLatestRelease({ tag_name: "v9.9.9", assets: [] });
+    expect(release?.tag).toBe("v9.9.9");
+    expect(assetSize(release, INSTALLER)).toBeNull();
+    expect(assetSize(release, PORTABLE)).toBeNull();
+  });
+
+  it("ignores assets whose name or size is not what GitHub documents", () => {
+    const release = parseLatestRelease({
+      tag_name: "v3.3.0",
+      assets: [
+        { name: "AorinEQ-Setup.exe", size: "69282488" },
+        { size: 74337460 },
+        null,
+        { name: "AorinEQ.exe", size: 74337460 },
+      ],
+    });
+    expect(assetSize(release, INSTALLER)).toBeNull();
+    expect(assetSize(release, PORTABLE)).toBe(74337460);
+  });
+
+  it("refuses a payload with no usable tag, rather than labelling a button with nothing", () => {
+    expect(parseLatestRelease({ assets: [] })).toBeNull();
+    expect(parseLatestRelease({ tag_name: "" })).toBeNull();
+    expect(parseLatestRelease({ tag_name: 330 })).toBeNull();
+    expect(parseLatestRelease(null)).toBeNull();
+    expect(parseLatestRelease("not json")).toBeNull();
+  });
+
+  it("survives a release with no asset list at all", () => {
+    const release = parseLatestRelease({ tag_name: "v3.3.0" });
+    expect(release?.tag).toBe("v3.3.0");
+    expect(assetSize(release, INSTALLER)).toBeNull();
+  });
+
+  it("reports no size when the release could not be read", () => {
+    expect(assetSize(null, INSTALLER)).toBeNull();
   });
 });
 
@@ -108,12 +189,27 @@ describe("the source tree", () => {
     expect(offenders).toEqual([]);
   });
 
-  it("points every download control at the shared constant", () => {
-    for (const file of ["components/DownloadCta.tsx", "components/SiteHeader.tsx", "components/SiteFooter.tsx"]) {
+  it("makes the installer the primary control everywhere it is offered", () => {
+    for (const file of [
+      "components/DownloadCta.tsx",
+      "components/SiteHeader.tsx",
+      "components/SiteFooter.tsx",
+    ]) {
       const source = read(path.join(SRC, file));
-      expect(source, `${file} should link the exe via DOWNLOAD_URL`).toContain(
-        "href={DOWNLOAD_URL}",
+      expect(source, `${file} should link the installer via INSTALLER.url`).toContain(
+        "href={INSTALLER.url}",
       );
+    }
+  });
+
+  it("offers the portable build too, and never ahead of the installer", () => {
+    for (const file of ["components/DownloadCta.tsx", "components/SiteFooter.tsx"]) {
+      const source = read(path.join(SRC, file));
+      expect(source, `${file} should offer the portable exe`).toContain("href={PORTABLE.url}");
+      expect(
+        source.indexOf("href={INSTALLER.url}"),
+        `${file} should put the installer first`,
+      ).toBeLessThan(source.indexOf("href={PORTABLE.url}"));
     }
   });
 
@@ -121,10 +217,30 @@ describe("the source tree", () => {
     const cta = read(path.join(SRC, "components", "DownloadCta.tsx"));
     // The release-notes link is secondary and must not be the button's own href.
     expect(cta).toContain("href={LATEST_RELEASE_URL}");
-    expect(cta.indexOf("href={DOWNLOAD_URL}")).toBeLessThan(cta.indexOf("href={LATEST_RELEASE_URL}"));
+    expect(cta.indexOf("href={INSTALLER.url}")).toBeLessThan(
+      cta.indexOf("href={LATEST_RELEASE_URL}"),
+    );
   });
 
-  it("warns about SmartScreen wherever the exe is offered", () => {
+  it("labels the installer honestly, and the portable build as portable", () => {
+    const cta = read(path.join(SRC, "components", "DownloadCta.tsx"));
+    expect(cta, "the button should say no admin is needed").toContain(
+      "installer, no admin needed",
+    );
+    expect(cta, "the secondary should say what portable means").toContain(
+      "portable — no installer,",
+    );
+  });
+
+  it("says on the install page that both builds update themselves", () => {
+    const install = read(path.join(SRC, "app", "docs", "install", "page.tsx"));
+    expect(install).toContain("Both update themselves.");
+    expect(install, "the page should let the reader choose").toContain(
+      'id="which"',
+    );
+  });
+
+  it("warns about SmartScreen wherever either build is offered", () => {
     const cta = read(path.join(SRC, "components", "DownloadCta.tsx"));
     const install = read(path.join(SRC, "app", "docs", "install", "page.tsx"));
     for (const [name, source] of [

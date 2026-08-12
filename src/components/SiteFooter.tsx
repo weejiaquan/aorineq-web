@@ -1,6 +1,6 @@
 import Link from "next/link";
 
-import { DOWNLOAD_URL, EAPO_URL, EXE_ASSET_NAME, GITHUB_URL, ISSUES_URL } from "@/lib/site";
+import { EAPO_URL, GITHUB_URL, INSTALLER, ISSUES_URL, PORTABLE } from "@/lib/site";
 
 const COLUMNS = [
   {
@@ -72,9 +72,12 @@ export function SiteFooter() {
           bundled here.
         </p>
         <p className="readout flex flex-wrap gap-4">
-          {/* Direct to the exe, like every other download control here — never a release page. */}
-          <a href={DOWNLOAD_URL} className="text-amber transition-opacity hover:opacity-80">
-            Download {EXE_ASSET_NAME}
+          {/* Direct to the files, like every other download control here — never a release page. */}
+          <a href={INSTALLER.url} className="text-amber transition-opacity hover:opacity-80">
+            Download {INSTALLER.assetName}
+          </a>
+          <a href={PORTABLE.url} className="text-muted transition-colors hover:text-text">
+            Portable {PORTABLE.assetName}
           </a>
           <a href={GITHUB_URL} className="text-muted transition-colors hover:text-text">
             Source

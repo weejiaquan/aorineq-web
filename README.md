@@ -10,8 +10,8 @@ Next.js (App Router) + Tailwind, deployed on Vercel. No database, no uploads, no
 
 | Route | What it does |
 | --- | --- |
-| `/` | Landing page. Live skin preview driven by the app's real fill math, and a one-click download of the exe with its SHA-256. |
-| `/docs/install` | Setup, and when Equalizer APO is and is not required. |
+| `/` | Landing page. Live skin preview driven by the app's real fill math, and a one-click download of the installer with its SHA-256. |
+| `/docs/install` | Installer vs portable, setup, and when Equalizer APO is and is not required. |
 | `/docs/skins` | Every `skin.json` field, the fill range, sprite sheets, GIF and muted layers. |
 | `/docs/protocol` | The `aorineq://` URL contract, so other sites can emit install buttons. |
 | `/gallery` | Manifest-driven skin gallery. Each card previews the real artwork and carries an install link with the digest pinned. |
@@ -19,32 +19,37 @@ Next.js (App Router) + Tailwind, deployed on Vercel. No database, no uploads, no
 | `/tools/eq-preset` | Build a band chain, see its response curve, and get an `aorineq://apply-preset` link that carries the whole preset. |
 | `/legal/*` | Terms, content policy, and the takedown route. |
 
-## The download link depends on the asset filename
+## The download links depend on the asset filenames
 
-Every download control on this site is a direct link to the exe, so a visitor gets the file on
-the first click instead of landing on a release page:
+Two builds are offered. The installer is primary everywhere — hero, docs, sticky header, footer
+— and the portable exe is the labelled secondary. Every control is a direct link, so a visitor
+gets the file on the first click instead of landing on a release page:
 
 ```
+https://github.com/weejiaquan/aorineq/releases/latest/download/AorinEQ-Setup.exe
+https://github.com/weejiaquan/aorineq/releases/latest/download/AorinEQ-Setup.exe.sha256
 https://github.com/weejiaquan/aorineq/releases/latest/download/AorinEQ.exe
 https://github.com/weejiaquan/aorineq/releases/latest/download/AorinEQ.exe.sha256
 ```
 
 GitHub resolves `latest/download/<name>` by **asset filename**, not by tag. That is what keeps
-the link correct forever without a rebuild here — and it is also the one thing that can break
-it silently:
+the links correct forever without a rebuild here — and it is also the one thing that can break
+them silently:
 
-> **A release must publish its assets as exactly `AorinEQ.exe` and `AorinEQ.exe.sha256`.**
-> Rename either one — `AorinEQ-v1.5.exe`, `AorinEQ.zip`, a suffixed architecture — and these
-> links 404. Nothing on this site can detect that; the page still renders, the button still
-> looks right, and every download fails.
+> **A release must publish its assets as exactly `AorinEQ-Setup.exe` and `AorinEQ.exe`, each
+> with a `.sha256` sidecar of the same name.** Rename any of them — `AorinEQ-v1.5.exe`,
+> `AorinEQ.zip`, a suffixed architecture — and these links 404. Nothing on this site can detect
+> that; the page still renders, the button still looks right, and every download fails.
 
-Both names live in `src/lib/site.ts` as `EXE_ASSET_NAME` and `SHA256_ASSET_NAME`, and
-`latestAssetUrl()` is the only place a download URL is built. `src/test/download.test.ts`
-fails if any page or component writes a GitHub URL of its own.
+The names live in `src/lib/site.ts` as the `INSTALLER` and `PORTABLE` assets, built by
+`releaseAsset()` — which derives each file's sidecar name and both URLs from the one filename,
+so a digest can never be shown under the wrong file. `latestAssetUrl()` is the only place a
+download URL is built, and `src/test/download.test.ts` fails if any page or component writes a
+GitHub URL of its own.
 
-The version, size and digest shown beside the button come from the GitHub API and the `.sha256`
-sidecar, cached for an hour. If either is unavailable the button still works — it never depends
-on a successful API call.
+The version, sizes and digests shown beside the buttons come from the GitHub API and each
+file's own `.sha256` sidecar, cached for an hour. If any of that is unavailable the buttons
+still work — they never depend on a successful API call.
 
 ## The parts ported from the desktop app
 

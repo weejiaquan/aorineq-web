@@ -1,6 +1,6 @@
 import Link from "next/link";
 
-import { DOWNLOAD_URL, EXE_ASSET_NAME, GITHUB_URL } from "@/lib/site";
+import { GITHUB_URL, INSTALLER } from "@/lib/site";
 
 /**
  * `from` is the breakpoint below which an item is dropped. A phone gets the two destinations
@@ -41,10 +41,10 @@ export function SiteHeader() {
           <a href={GITHUB_URL} className={`${LINK_CLASS} hidden lg:block`}>
             GitHub
           </a>
-          {/* Direct to the exe, like every other download control here — never a release page. */}
+          {/* Direct to the installer, like every other download control here — never a release page. */}
           <a
-            href={DOWNLOAD_URL}
-            aria-label={`Download ${EXE_ASSET_NAME} for Windows — direct download`}
+            href={INSTALLER.url}
+            aria-label={`Download ${INSTALLER.assetName} for Windows — direct download, no admin needed`}
             className="ml-1 whitespace-nowrap rounded-sm bg-amber px-3 py-1.5 text-sm font-medium text-ink transition-opacity hover:opacity-90 sm:ml-2"
           >
             Download
