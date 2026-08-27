@@ -6,7 +6,7 @@ import { GITHUB_URL } from "@/lib/site";
 export const metadata: Metadata = {
   title: "Docs",
   description:
-    "Install and setup, the skin format, and the aorineq:// URL contract for one-click installs.",
+    "Install and setup, AirPlay to a HomePod, the skin format, and the aorineq:// URL contract for one-click installs.",
 };
 
 const CARDS = [
@@ -14,6 +14,11 @@ const CARDS = [
     href: "/docs/install",
     title: "Install and setup",
     body: "What AorinEQ needs, when Equalizer APO is required and when it is not, and the one step of setup that needs you.",
+  },
+  {
+    href: "/docs/airplay",
+    title: "AirPlay",
+    body: "Sending this PC's audio to a HomePod or Apple TV: what it needs, how to hear it on the speaker only, what the latency modes really mean, and which device the volume keys end up driving.",
   },
   {
     href: "/docs/skins",
@@ -33,10 +38,10 @@ export default function DocsIndexPage() {
       <p className="eyebrow">Reference</p>
       <h1 className="mt-3 text-4xl font-bold text-text">Documentation</h1>
       <p className="mt-5 text-lg text-muted">
-        AorinEQ is a tray app with three moving parts: it drives volume, it draws an on-screen
-        display from artwork you supply, and it writes parametric filters into Equalizer APO.
-        These pages cover the two parts other people build against — the skin format and the
-        URL scheme.
+        AorinEQ is a tray app that drives your volume keys, draws an on-screen display from artwork
+        you supply, writes parametric filters into Equalizer APO, and can send the result to an
+        AirPlay speaker. These pages cover getting it running, the AirPlay side, and the two parts
+        other people build against — the skin format and the URL scheme.
       </p>
 
       <div className="mt-10 grid gap-px overflow-hidden rounded-sm border border-line bg-line">

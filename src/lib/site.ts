@@ -1,7 +1,7 @@
 /** Site-wide constants and the absolute origin the `aorineq://` install links point back at. */
 
 export const SITE_NAME = "AorinEQ";
-export const SITE_TAGLINE = "Working volume keys, a skinnable OSD, and a real parametric EQ for Windows.";
+export const SITE_TAGLINE = "Working volume keys, a skinnable OSD, a real parametric EQ, and AirPlay to a HomePod — for Windows.";
 export const GITHUB_REPO = "weejiaquan/aorineq";
 export const GITHUB_URL = `https://github.com/${GITHUB_REPO}`;
 export const RELEASES_URL = `${GITHUB_URL}/releases`;

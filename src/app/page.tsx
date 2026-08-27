@@ -42,6 +42,7 @@ export default async function HomePage() {
       <Problem />
       <Skins skin={skin} installLink={installLink} designer={designer} />
       <Equalizer capture={eqEditor} />
+      <AirPlay />
       <Sharing />
       <Closing capture={osd} />
     </>
@@ -68,7 +69,8 @@ async function Hero({ skin }: { skin: Awaited<ReturnType<typeof loadHeroSkin>> }
           </p>
           <p className="mt-4 max-w-xl text-lg text-muted">
             The on-screen display is a folder of your own PNGs. Every playback device gets its
-            own parametric EQ. Both travel as links.
+            own parametric EQ. Both travel as links. And the same audio can go straight to a
+            HomePod or an Apple TV, without a second application in the way.
           </p>
 
           <div className="mt-9">
@@ -272,6 +274,79 @@ Filter 3: ON PK Fc 1400 Hz Gain 1.4 dB Q 1.80`}
         <div className="mt-10">
           <DeferredMedia capture={capture} />
         </div>
+      </div>
+    </section>
+  );
+}
+
+/** What AirPlay needs, and the two things about it that are not obvious. */
+const AIRPLAY_NOTES = [
+  {
+    label: "No pairing, no account",
+    body: "AorinEQ speaks the original unencrypted RAOP protocol, which every AirPlay receiver still accepts. There is no code to enter, no Apple ID, and nothing to set up on the receiver — it just has to be on the same network.",
+  },
+  {
+    label: "Both places at once, unless you say otherwise",
+    body: "By default the stream is whatever you are already listening to, so it plays on the PC and the speaker together. Pick a virtual audio device as the source and it goes to the speaker only. That is the route that works on every machine.",
+  },
+  {
+    label: "The volume keys already do the right thing",
+    body: "The stream is captured after Equalizer APO, so in preamp mode your keys have already turned it down before it is sent — set the receiver to 100% and leave it. AorinEQ works this out and greys the setting out rather than letting you attenuate twice.",
+  },
+];
+
+function AirPlay() {
+  return (
+    <section className="border-b border-line">
+      <div className="shell py-16 lg:py-20">
+        <div className="flex flex-wrap items-baseline justify-between gap-4">
+          <h2 className="text-3xl font-bold text-sand sm:text-4xl">
+            Straight to a HomePod, with nothing in between
+          </h2>
+          <p className="eyebrow">RAOP · 44.1 kHz · 250–2000 ms</p>
+        </div>
+
+        <div className="mt-10 grid gap-10 [&>*]:min-w-0 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.05fr)] lg:gap-14">
+          <div>
+            <p className="text-muted">
+              Owning a HomePod and a Windows PC normally means buying something to bridge them.
+              AorinEQ sends this PC&apos;s audio to a HomePod, an Apple TV or any other AirPlay
+              speaker itself. Receivers announce themselves on the network; you pick one and press
+              Connect.
+            </p>
+            <p className="mt-4 text-muted">
+              How far ahead it sends is yours to choose — under a second when you are watching
+              something and want the picture to match, or a couple of seconds when you are only
+              listening and would rather it never break up. A live counter shows how much the
+              network is actually having to resend, so the choice is not guesswork.
+            </p>
+            <p className="mt-4 text-muted">
+              It also writes an inaudible noise floor through silence, because some receivers
+              power down between tracks and clip the first moment of the next one.
+            </p>
+
+            <Link
+              href="/docs/airplay"
+              className="mt-6 inline-block rounded-sm border border-line px-4 py-2.5 text-sm text-muted transition-colors hover:border-amber hover:text-amber"
+            >
+              How AirPlay works here
+            </Link>
+          </div>
+
+          <div className="grid gap-px overflow-hidden rounded-sm border border-line bg-line">
+            {AIRPLAY_NOTES.map((note) => (
+              <div key={note.label} className="bg-panel p-6">
+                <h3 className="font-display text-lg font-semibold text-text">{note.label}</h3>
+                <p className="mt-2 text-sm text-muted">{note.body}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <p className="mt-8 text-sm text-muted">
+          One receiver at a time, and no AirPlay 2. It is newer than the rest of the app and
+          labelled experimental inside it.
+        </p>
       </div>
     </section>
   );

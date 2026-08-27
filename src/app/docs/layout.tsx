@@ -6,6 +6,7 @@ const SECTIONS = [
     links: [
       { href: "/docs", label: "Overview" },
       { href: "/docs/install", label: "Install and setup" },
+      { href: "/docs/airplay", label: "AirPlay" },
     ],
   },
   {
