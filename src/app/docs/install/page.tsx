@@ -15,7 +15,7 @@ export default function InstallDocsPage() {
   return (
     <>
       <p className="eyebrow">Getting started</p>
-      <h1 className="mt-3 text-4xl font-bold text-text">Install and setup</h1>
+      <h1 className="title mt-3 text-4xl text-text">Install and setup</h1>
       <p className="mt-5 text-lg text-muted">
         AorinEQ comes two ways: an installer that never asks for administrator rights, and a
         single portable exe you just run. Neither needs .NET. What you do after that depends on

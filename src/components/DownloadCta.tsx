@@ -36,11 +36,11 @@ export async function DownloadCta({ compact = false }: { compact?: boolean }) {
 
   return (
     <div className={compact ? "" : "w-full"}>
-      <div className="flex flex-wrap items-stretch gap-3">
+      <div className="flex flex-wrap items-stretch gap-4 px-2 sm:px-0">
         <a
           href={INSTALLER.url}
           aria-label={`Download ${INSTALLER.assetName} — Windows installer, direct download`}
-          className="inline-flex flex-col justify-center rounded-sm bg-amber px-5 py-3 text-ink transition-opacity hover:opacity-90"
+          className="btn btn-primary flex-col items-start px-6 py-3"
         >
           <span className="font-display text-base font-semibold tracking-tight">
             Download {INSTALLER.assetName}
@@ -53,9 +53,9 @@ export async function DownloadCta({ compact = false }: { compact?: boolean }) {
         <a
           href={PORTABLE.url}
           aria-label={`Download ${PORTABLE.assetName} — portable single file, direct download`}
-          className="inline-flex flex-col justify-center rounded-sm border border-line px-4 py-3 text-text transition-colors hover:border-amber"
+          className="btn btn-ghost flex-col items-start px-5 py-3"
         >
-          <span className="font-display text-sm font-semibold tracking-tight">
+          <span className="font-display text-sm font-semibold tracking-tight text-text">
             {PORTABLE.assetName}
           </span>
           <span className="font-mono text-xs text-muted">
@@ -65,7 +65,7 @@ export async function DownloadCta({ compact = false }: { compact?: boolean }) {
         </a>
         <a
           href={LATEST_RELEASE_URL}
-          className="inline-flex items-center rounded-sm border border-line px-4 py-3 text-sm text-muted transition-colors hover:border-amber hover:text-amber"
+          className="btn btn-ghost px-5 py-3"
         >
           Release notes
         </a>
@@ -91,7 +91,7 @@ export async function DownloadCta({ compact = false }: { compact?: boolean }) {
       ) : (
         <aside
           aria-label="What Windows will show the first time you run it"
-          className="mt-5 max-w-2xl rounded-sm border border-line bg-panel p-4"
+          className="mt-7 max-w-2xl border-l-[3px] border-rust pl-5"
         >
           <p className="font-display text-sm font-semibold text-rust">
             Windows will warn you the first time. That is expected.

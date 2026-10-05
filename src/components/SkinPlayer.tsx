@@ -90,7 +90,7 @@ export function SkinPlayer({ skin, variant = "card", initialPercent = 42 }: Skin
       </div>
 
       {isHero ? (
-        <dl className="mt-4 grid grid-cols-3 gap-px overflow-hidden rounded-sm border border-line bg-line">
+        <dl className="mt-4 grid grid-cols-3 divide-x divide-line border-y border-line">
           <Reading label="Volume" value={muted ? "muted" : `${percent}%`} />
           <Reading label="APO preamp" value={formatDb(toDb(percent, muted))} />
           <Reading label="Clip edge" value={`x = ${lit} px`} />
@@ -137,9 +137,9 @@ export function SkinPlayer({ skin, variant = "card", initialPercent = 42 }: Skin
 
 function Reading({ label, value }: { label: string; value: string }) {
   return (
-    <div className="bg-panel px-4 py-3">
+    <div className="px-3 py-3 first:pl-0 sm:px-4">
       <dt className="eyebrow">{label}</dt>
-      <dd className="readout mt-1 text-base text-amber">{value}</dd>
+      <dd className="readout mt-1 break-normal text-base text-amber sm:text-lg">{value}</dd>
     </div>
   );
 }

@@ -23,7 +23,7 @@ export function SiteHeader() {
       <div className="shell flex h-14 items-center justify-between gap-4">
         <Link href="/" className="flex items-center gap-2.5">
           <MarkGlyph />
-          <span className="font-display text-[0.95rem] font-semibold tracking-[0.14em] text-text uppercase">
+          <span className="title font-display text-lg text-text uppercase">
             AorinEQ
           </span>
         </Link>
@@ -45,7 +45,7 @@ export function SiteHeader() {
           <a
             href={INSTALLER.url}
             aria-label={`Download ${INSTALLER.assetName} for Windows — direct download, no admin needed`}
-            className="ml-1 whitespace-nowrap rounded-sm bg-amber px-3 py-1.5 text-sm font-medium text-ink transition-opacity hover:opacity-90 sm:ml-2"
+            className="btn btn-primary ml-1.5 whitespace-nowrap px-3 py-1.5 sm:ml-3 sm:px-3.5"
           >
             Download
           </a>

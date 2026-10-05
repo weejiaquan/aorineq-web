@@ -34,7 +34,7 @@ export function SiteFooter() {
     <footer className="mt-24 border-t border-line">
       <div className="shell grid gap-10 py-12 sm:grid-cols-2 lg:grid-cols-4">
         <div>
-          <p className="font-display text-sm font-semibold uppercase tracking-[0.14em] text-text">
+          <p className="title font-display text-lg uppercase text-text">
             AorinEQ
           </p>
           <p className="mt-3 max-w-xs text-sm text-muted">

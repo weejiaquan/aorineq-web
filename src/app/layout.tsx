@@ -7,14 +7,15 @@ import { SITE_NAME, SITE_TAGLINE, siteUrl } from "@/lib/site";
 import "./globals.css";
 
 /*
- * Archivo runs at an expanded width for headings — the silkscreen legend on a rack faceplate,
- * which is the register the whole site is set in. Plex Sans reads long-form docs without
+ * Archivo runs at an expanded width for headings, and its heavy italic is the display titling
+ * the home page and every page's h1 are set in. Plex Sans reads long-form docs without
  * fighting it, and Plex Mono carries everything this product actually deals in: dB values,
  * pixel coordinates, digests and Equalizer APO filter lines.
  */
 const archivo = Archivo({
   subsets: ["latin"],
   axes: ["wdth"],
+  style: ["normal", "italic"],
   variable: "--font-archivo",
   display: "swap",
 });

@@ -13,7 +13,7 @@ export default function SkinLinkPage() {
   return (
     <div className="shell max-w-4xl py-14 lg:py-20">
       <p className="eyebrow">aorineq://install-skin</p>
-      <h1 className="mt-3 text-4xl font-bold text-text sm:text-5xl">Install-link builder</h1>
+      <h1 className="title mt-3 text-4xl text-text sm:text-5xl">Install-link builder</h1>
       <p className="mt-5 max-w-2xl text-lg text-muted">
         Host a skin zip wherever you like. Paste the link here and get a one-click install button
         back, with the file&apos;s SHA-256 pinned into it so AorinEQ refuses anything that

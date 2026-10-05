@@ -22,7 +22,7 @@ export default async function GalleryPage() {
       <div className="flex flex-wrap items-end justify-between gap-6">
         <div className="max-w-2xl">
           <p className="eyebrow">Gallery · {skins.length} skin{skins.length === 1 ? "" : "s"}</p>
-          <h1 className="mt-3 text-4xl font-bold text-text sm:text-5xl">Skins</h1>
+          <h1 className="title mt-3 text-4xl text-text sm:text-5xl">Skins</h1>
           <p className="mt-5 text-lg text-muted">
             Every preview here is the skin&apos;s real PNGs composited by the same fill math the
             app runs. Drag one and you are seeing what appears over your desktop, not a

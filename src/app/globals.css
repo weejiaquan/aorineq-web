@@ -3,19 +3,22 @@
 /*
  * The palette is sourced from the artwork the app renders: --amber is the percent-text colour
  * of the seia-bar-shadow skin (#FEC707) and --sand is its outline colour (#F3CFAB), read
- * straight out of that skin's skin.json. The ground is a graphite faceplate rather than pure
- * black so the artwork, not the page, is the brightest thing on screen.
+ * straight out of that skin's skin.json. The ground is a night indigo rather than pure black:
+ * it sits opposite amber, so the accent and the pastel artwork are the brightest things on
+ * screen. --edge is the hard offset shadow under display titles and the primary button, and is
+ * never a text colour.
  *
  * Every foreground/background pairing used in the UI is listed in src/lib/contrast.ts and
  * checked against these exact values by src/test/contrast.test.ts.
  */
 @theme {
-  --color-ink: #0b0e13;
-  --color-panel: #12161e;
-  --color-raised: #1a1f29;
-  --color-line: #2a3240;
-  --color-text: #e6e9ef;
-  --color-muted: #98a3b4;
+  --color-ink: #0b0a14;
+  --color-panel: #15131f;
+  --color-raised: #1e1b2c;
+  --color-line: #332e47;
+  --color-text: #efecf7;
+  --color-muted: #a39db8;
+  --color-edge: #b4530a;
   --color-amber: #fec707;
   --color-sand: #f3cfab;
   --color-mint: #7fd1c1;
@@ -24,6 +27,11 @@
   --font-display: var(--font-archivo), ui-sans-serif, system-ui, sans-serif;
   --font-sans: var(--font-plex-sans), ui-sans-serif, system-ui, sans-serif;
   --font-mono: var(--font-plex-mono), ui-monospace, monospace;
+
+  /* Corners are square everywhere; the angle comes from the skewed buttons, not from radii. */
+  --radius-sm: 0;
+
+  --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 @layer base {
@@ -42,7 +50,7 @@
     text-rendering: optimizeLegibility;
   }
 
-  /* The display face carries the faceplate silkscreen look: expanded width, tight tracking. */
+  /* Headings run at an expanded width with tight tracking; .title adds the display treatment. */
   h1,
   h2,
   h3 {
@@ -60,7 +68,6 @@
   :focus-visible {
     outline: 2px solid var(--color-amber);
     outline-offset: 3px;
-    border-radius: 2px;
   }
 
   ::selection {
@@ -104,7 +111,163 @@
   .panel {
     background-color: var(--color-panel);
     border: 1px solid var(--color-line);
-    border-radius: 4px;
+  }
+
+  /*
+   * Display titling: heavy italic with a hard, unblurred offset shadow. Used for the home page
+   * headings and each page's h1 — never inside .doc, where long-form headings stay upright.
+   */
+  .title {
+    font-style: italic;
+    font-weight: 800;
+    font-variation-settings: "wdth" 122;
+    letter-spacing: -0.045em;
+    line-height: 0.98;
+    text-shadow: 0.045em 0.045em 0 var(--color-edge);
+    padding-right: 0.08em;
+  }
+
+  /*
+   * A section's own figure — −120 dB, 1500 × 750 — at display size, drawn as an outline. It
+   * repeats what the eyebrow already says, so it is always aria-hidden.
+   */
+  .ghost {
+    font-family: var(--font-display);
+    font-style: italic;
+    font-weight: 800;
+    font-variation-settings: "wdth" 125;
+    font-size: clamp(2.25rem, 6.4vw, 5.25rem);
+    letter-spacing: -0.05em;
+    line-height: 0.9;
+    color: transparent;
+    -webkit-text-stroke: 1px var(--color-amber);
+    user-select: none;
+  }
+
+  /*
+   * Parallelogram buttons. The slant is a skewed layer behind the label rather than a
+   * clip-path on the element, because a clip-path would also cut off the focus outline.
+   */
+  .btn {
+    position: relative;
+    isolation: isolate;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0.65rem 1.25rem;
+    font-size: 0.875rem;
+    color: var(--btn-fg);
+    transition:
+      color 0.16s,
+      transform 0.16s;
+  }
+
+  .btn::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    transform: skewX(-12deg);
+    background-color: var(--btn-bg);
+    border: 1px solid var(--btn-line);
+    box-shadow: var(--btn-shadow, none);
+    transition:
+      border-color 0.16s,
+      box-shadow 0.16s;
+  }
+
+  .btn-primary {
+    --btn-bg: var(--color-amber);
+    --btn-line: var(--color-amber);
+    --btn-fg: var(--color-ink);
+    --btn-shadow: 3px 3px 0 var(--color-edge);
+    font-weight: 600;
+  }
+
+  .btn-primary:hover {
+    --btn-shadow: 5px 5px 0 var(--color-edge);
+    transform: translate(-2px, -2px);
+  }
+
+  .btn-ghost {
+    --btn-bg: transparent;
+    --btn-line: var(--color-line);
+    --btn-fg: var(--color-muted);
+  }
+
+  .btn-ghost:hover {
+    --btn-line: var(--color-amber);
+    --btn-fg: var(--color-amber);
+  }
+
+  /* Diagonal light bands drifting behind a section. The shift is one horizontal period. */
+  .bands {
+    position: relative;
+    isolation: isolate;
+    overflow: hidden;
+  }
+
+  .bands::before {
+    content: "";
+    position: absolute;
+    inset: 0 -250px;
+    z-index: -1;
+    pointer-events: none;
+    background-image: repeating-linear-gradient(
+      118deg,
+      transparent 0 118px,
+      color-mix(in srgb, var(--color-amber) 5%, transparent) 118px 176px,
+      transparent 176px 218px,
+      color-mix(in srgb, var(--color-amber) 16%, transparent) 218px 220px
+    );
+    mask-image: linear-gradient(to bottom, #000 25%, transparent 95%);
+    animation: band-drift 16s linear infinite;
+  }
+
+  /* Concentric hairline rings behind the hero artwork. */
+  .rings {
+    position: relative;
+    isolation: isolate;
+  }
+
+  .rings::before {
+    content: "";
+    position: absolute;
+    inset: -22% -12%;
+    z-index: -1;
+    pointer-events: none;
+    background-image: repeating-radial-gradient(
+      circle at 50% 40%,
+      transparent 0 63px,
+      color-mix(in srgb, var(--color-sand) 15%, transparent) 63px 64px
+    );
+    mask-image: radial-gradient(circle at 50% 40%, #000 0, transparent 66%);
+  }
+
+  /* The hero's load sequence; each step sets its own animation-delay. */
+  .seq {
+    animation: wipe-in 0.62s var(--ease-out-expo) both;
+  }
+
+  /*
+   * Scroll entrances, driven by the Reveal component. "idle" is the no-JavaScript state. The
+   * wipe is on the children, never the observed element: a clip-path on the element itself
+   * removes it from the viewport as far as IntersectionObserver is concerned, so it would
+   * never be reported as visible and never come back.
+   */
+  [data-reveal="hidden"] > * {
+    opacity: 0;
+    transform: translateX(-28px);
+    clip-path: inset(-40px 100% -40px -40px);
+  }
+
+  [data-reveal="shown"] > * {
+    clip-path: inset(-40px);
+    transition:
+      opacity 0.62s var(--ease-out-expo),
+      transform 0.62s var(--ease-out-expo),
+      clip-path 0.62s var(--ease-out-expo);
+    transition-delay: inherit;
   }
 
   /*
@@ -212,6 +375,26 @@
   }
 }
 
+@keyframes band-drift {
+  to {
+    transform: translateX(-249.16px);
+  }
+}
+
+@keyframes wipe-in {
+  from {
+    opacity: 0;
+    transform: translateX(-28px);
+    clip-path: inset(-40px 100% -40px -40px);
+  }
+
+  to {
+    opacity: 1;
+    transform: none;
+    clip-path: inset(-40px);
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   html {
     scroll-behavior: auto;
@@ -221,7 +404,9 @@
   *::before,
   *::after {
     animation-duration: 0.01ms !important;
+    animation-delay: 0s !important;
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
+    transition-delay: 0s !important;
   }
 }

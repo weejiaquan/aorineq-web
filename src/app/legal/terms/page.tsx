@@ -14,7 +14,7 @@ export default function TermsPage() {
   return (
     <>
       <p className="eyebrow">Policies</p>
-      <h1 className="mt-3 text-4xl font-bold text-text">Terms</h1>
+      <h1 className="title mt-3 text-4xl text-text">Terms</h1>
       <p className="mt-5 text-lg text-muted">
         This is a small site for a free program. These terms are short because there is not much
         happening: no accounts, no payments, and nothing of yours is stored here.

@@ -14,7 +14,7 @@ export default function DmcaPage() {
   return (
     <>
       <p className="eyebrow">Policies</p>
-      <h1 className="mt-3 text-4xl font-bold text-text">Report or take down</h1>
+      <h1 className="title mt-3 text-4xl text-text">Report or take down</h1>
       <p className="mt-5 text-lg text-muted">
         If something in the gallery uses your work without permission, or breaks the{" "}
         <Link href="/legal/content-policy">content policy</Link>, this page is how you get it
