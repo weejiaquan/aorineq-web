@@ -13,7 +13,7 @@ export default function AirPlayDocsPage() {
   return (
     <>
       <p className="eyebrow">Getting started</p>
-      <h1 className="mt-3 text-4xl font-bold text-text">AirPlay</h1>
+      <h1 className="title mt-3 text-4xl text-text">AirPlay</h1>
       <p className="mt-5 text-lg text-muted">
         AorinEQ can send this PC&apos;s audio to a HomePod, an Apple TV or any other AirPlay
         receiver on your network, without a second application. There is no pairing step, no Apple

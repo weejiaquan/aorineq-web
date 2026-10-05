@@ -36,7 +36,7 @@ export default function DocsIndexPage() {
   return (
     <>
       <p className="eyebrow">Reference</p>
-      <h1 className="mt-3 text-4xl font-bold text-text">Documentation</h1>
+      <h1 className="title mt-3 text-4xl text-text">Documentation</h1>
       <p className="mt-5 text-lg text-muted">
         AorinEQ is a tray app that drives your volume keys, draws an on-screen display from artwork
         you supply, writes parametric filters into Equalizer APO, and can send the result to an

@@ -13,7 +13,7 @@ export default function EqPresetPage() {
   return (
     <div className="shell py-14 lg:py-20">
       <p className="eyebrow">aorineq://apply-preset</p>
-      <h1 className="mt-3 text-4xl font-bold text-text sm:text-5xl">EQ preset links</h1>
+      <h1 className="title mt-3 text-4xl text-text sm:text-5xl">EQ preset links</h1>
       <p className="mt-5 max-w-2xl text-lg text-muted">
         A tuning is a short list of numbers, so it can travel as a link rather than a file. Build
         a chain here and the whole thing is encoded into the URL — nothing is uploaded, nothing

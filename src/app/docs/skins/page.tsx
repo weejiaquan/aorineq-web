@@ -30,7 +30,7 @@ export default async function SkinDocsPage() {
   return (
     <>
       <p className="eyebrow">Authoring</p>
-      <h1 className="mt-3 text-4xl font-bold text-text">Skin format</h1>
+      <h1 className="title mt-3 text-4xl text-text">Skin format</h1>
       <p className="mt-5 text-lg text-muted">
         A skin is a folder under <code className="font-mono">%APPDATA%\AorinEQ\skins\</code>. Two
         images and an optional JSON file. Everything else — the fill, the click behaviour, the

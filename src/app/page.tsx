@@ -5,6 +5,7 @@ import { DeferredMedia } from "@/components/DeferredMedia";
 import { DownloadCta } from "@/components/DownloadCta";
 import { EqCurve } from "@/components/EqCurve";
 import { MediaFigure } from "@/components/MediaFigure";
+import { Reveal } from "@/components/Reveal";
 import { SkinPlayer } from "@/components/SkinPlayer";
 import { buildInstallSkinLink } from "@/lib/protocol";
 import { suggestPreampDb } from "@/lib/eq-response";
@@ -51,42 +52,57 @@ export default async function HomePage() {
 
 async function Hero({ skin }: { skin: Awaited<ReturnType<typeof loadHeroSkin>> }) {
   return (
-    <section className="border-b border-line">
-      <div className="shell grid gap-14 py-16 [&>*]:min-w-0 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.05fr)] lg:items-center lg:gap-16 lg:py-24">
+    <section className="bands border-b border-line">
+      <div className="shell grid gap-14 pb-16 pt-14 [&>*]:min-w-0 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.1fr)] lg:items-center lg:gap-12 lg:pb-24 lg:pt-20">
         <div>
-          <p className="eyebrow">Windows 10/11 · tray app · MIT</p>
-          <h1 className="mt-4 max-w-[13ch] text-[clamp(2.5rem,6vw,4rem)] font-bold text-text">
-            Volume keys that reach the DAC.
+          <p className="eyebrow seq">Windows 10/11 · tray app · MIT</p>
+          <h1 className="title mt-5 whitespace-nowrap text-[clamp(2.5rem,4.9vw,4.25rem)] text-text">
+            <span className="seq block" style={{ animationDelay: "140ms" }}>
+              Volume keys
+            </span>{" "}
+            <span className="seq block" style={{ animationDelay: "280ms" }}>
+              that reach
+            </span>{" "}
+            <span className="seq block" style={{ animationDelay: "420ms" }}>
+              the DAC.
+            </span>
           </h1>
-          <p className="mt-6 max-w-xl text-lg text-muted">
-            Some USB DACs advertise hardware volume and then ignore every command Windows sends
-            — the slider moves and nothing changes. AorinEQ takes over the volume keys and
-            applies the change as digital attenuation inside{" "}
-            <a href={EAPO_URL} className="text-amber underline-offset-4 hover:underline">
-              Equalizer APO
-            </a>
-            , before the audio ever leaves the PC.
-          </p>
-          <p className="mt-4 max-w-xl text-lg text-muted">
-            The on-screen display is a folder of your own PNGs. Every playback device gets its
-            own parametric EQ. Both travel as links. And the same audio can go straight to a
-            HomePod or an Apple TV, without a second application in the way.
-          </p>
+          <div
+            aria-hidden
+            className="seq mt-8 h-[3px] w-28 bg-amber"
+            style={{ animationDelay: "560ms" }}
+          />
+          <div className="seq" style={{ animationDelay: "640ms" }}>
+            <p className="mt-7 max-w-xl text-lg text-muted">
+              Some USB DACs advertise hardware volume and then ignore every command Windows sends
+              — the slider moves and nothing changes. AorinEQ takes over the volume keys and
+              applies the change as digital attenuation inside{" "}
+              <a href={EAPO_URL} className="text-amber underline-offset-4 hover:underline">
+                Equalizer APO
+              </a>
+              , before the audio ever leaves the PC.
+            </p>
+            <p className="mt-4 max-w-xl text-muted">
+              The on-screen display is a folder of your own PNGs. Every playback device gets its
+              own parametric EQ. Both travel as links. And the same audio can go straight to a
+              HomePod or an Apple TV, without a second application in the way.
+            </p>
+          </div>
 
-          <div className="mt-9">
+          <div className="seq mt-9" style={{ animationDelay: "780ms" }}>
             <DownloadCta />
           </div>
         </div>
 
-        <div className="panel relative overflow-hidden p-5 sm:p-7">
-          <div className="mb-5 flex items-baseline justify-between gap-4">
+        <div className="rings seq" style={{ animationDelay: "420ms" }}>
+          <div className="mb-3 flex items-baseline justify-between gap-4">
             <p className="eyebrow">Live · {skin.title}</p>
             <p className="readout text-muted">
               {skin.width} × {skin.height} px
             </p>
           </div>
           <SkinPlayer skin={skin} variant="hero" initialPercent={42} />
-          <p className="mt-5 border-t border-line pt-4 text-sm text-muted">
+          <p className="mt-5 max-w-lg text-sm text-muted">
             This is not a video. It is the skin&apos;s two PNGs composited by the same fill math
             the app runs, so what you drag here is what appears over your desktop.
           </p>
@@ -117,27 +133,36 @@ const PROBLEMS = [
 function Problem() {
   return (
     <section className="border-b border-line">
-      <div className="shell py-16 lg:py-20">
-        <div className="flex flex-wrap items-baseline justify-between gap-4">
-          <h2 className="text-3xl font-bold text-sand sm:text-4xl">What is actually broken</h2>
+      <div className="shell grid gap-12 py-20 [&>*]:min-w-0 lg:grid-cols-[minmax(0,0.85fr)_minmax(0,1.15fr)] lg:gap-16 lg:py-28">
+        <Reveal className="lg:sticky lg:top-24 lg:self-start">
           <p className="eyebrow">−120 dB … 0 dB · 2% per press</p>
-        </div>
+          <h2 className="title mt-4 text-[clamp(2.25rem,4.6vw,3.75rem)] text-sand">
+            What is actually broken
+          </h2>
+          <p aria-hidden className="ghost mt-8">
+            −120 dB
+          </p>
+        </Reveal>
 
-        <div className="mt-10 grid gap-px overflow-hidden rounded-sm border border-line bg-line md:grid-cols-3">
-          {PROBLEMS.map((item) => (
-            <article key={item.label} className="flex flex-col bg-panel p-6">
-              <h3 className="font-display text-lg font-semibold text-text">{item.label}</h3>
-              <p className="mt-3 flex-1 text-sm text-muted">{item.body}</p>
-              <p className="readout mt-4 border-t border-line pt-3 text-mint">{item.detail}</p>
-            </article>
+        <div>
+          {PROBLEMS.map((item, index) => (
+            <Reveal key={item.label} delay={index * 90}>
+              <article className="grid gap-3 border-t border-line py-7 sm:grid-cols-[minmax(0,13rem)_minmax(0,1fr)] sm:gap-8">
+                <h3 className="font-display text-xl font-semibold text-text">{item.label}</h3>
+                <div>
+                  <p className="text-muted">{item.body}</p>
+                  <p className="readout mt-4 break-normal text-mint">{item.detail}</p>
+                </div>
+              </article>
+            </Reveal>
           ))}
-        </div>
 
-        <p className="mt-8 max-w-3xl text-muted">
-          The volume model is deliberately boring: 0% is a hard mute at −120 dB, 1% is −50 dB,
-          100% is 0 dB, linear in dB in between, and never above 0 dB — so the chain cannot
-          clip no matter where you leave the keys.
-        </p>
+          <p className="border-t border-line pt-7 text-muted">
+            The volume model is deliberately boring: 0% is a hard mute at −120 dB, 1% is −50 dB,
+            100% is 0 dB, linear in dB in between, and never above 0 dB — so the chain cannot
+            clip no matter where you leave the keys.
+          </p>
+        </div>
       </div>
     </section>
   );
@@ -154,55 +179,56 @@ function Skins({
 }) {
   return (
     <section className="border-b border-line">
-      <div className="shell py-16 lg:py-20">
-        <div className="flex flex-wrap items-baseline justify-between gap-4">
-          <h2 className="text-3xl font-bold text-sand sm:text-4xl">
-            The display is a folder you own
-          </h2>
-          <p className="eyebrow">
-            fillStartX {skin.config.fillStartX} · fillEndX {skin.config.fillEndX}
+      <div className="shell grid gap-12 py-20 [&>*]:min-w-0 lg:grid-cols-[minmax(0,1.1fr)_minmax(0,1fr)] lg:gap-16 lg:py-28">
+        <div className="lg:order-2">
+          <Reveal>
+            <p className="eyebrow">
+              fillStartX {skin.config.fillStartX} · fillEndX {skin.config.fillEndX}
+            </p>
+            <h2 className="title mt-4 text-[clamp(2.25rem,4.6vw,3.75rem)] text-sand">
+              The display is a folder you own
+            </h2>
+          </Reveal>
+
+          <p className="mt-8 text-muted">
+            A skin is two images the same size. <code className="font-mono text-text">empty.png</code>{" "}
+            is the unlit plate; <code className="font-mono text-text">full.png</code> is the lit
+            one. Percent maps onto the span between{" "}
+            <code className="font-mono text-text">fillStartX</code> and{" "}
+            <code className="font-mono text-text">fillEndX</code>, the lit layer is clipped to
+            that width, and the empty layer is clipped to everything outside it — so a
+            translucent bar never stacks on itself.
           </p>
-        </div>
+          <p className="mt-4 text-muted">
+            Layers can be GIFs or vertical sprite sheets, the percent number takes a colour,
+            font, size, outline and shadow, and a <code className="font-mono text-text">muted.png</code>{" "}
+            can replace the dim-and-badge treatment entirely. The skin designer inside the app
+            builds all of it without touching JSON, and exports a zip.
+          </p>
 
-        <div className="mt-10 grid gap-10 [&>*]:min-w-0 lg:grid-cols-2 lg:gap-14">
-          <div>
-            <p className="text-muted">
-              A skin is two images the same size. <code className="font-mono text-text">empty.png</code>{" "}
-              is the unlit plate; <code className="font-mono text-text">full.png</code> is the lit
-              one. Percent maps onto the span between{" "}
-              <code className="font-mono text-text">fillStartX</code> and{" "}
-              <code className="font-mono text-text">fillEndX</code>, the lit layer is clipped to
-              that width, and the empty layer is clipped to everything outside it — so a
-              translucent bar never stacks on itself.
-            </p>
-            <p className="mt-4 text-muted">
-              Layers can be GIFs or vertical sprite sheets, the percent number takes a colour,
-              font, size, outline and shadow, and a <code className="font-mono text-text">muted.png</code>{" "}
-              can replace the dim-and-badge treatment entirely. The skin designer inside the app
-              builds all of it without touching JSON, and exports a zip.
-            </p>
-
-            <div className="mt-7 flex flex-wrap gap-3">
-              <Link
-                href="/gallery"
-                className="rounded-sm bg-amber px-4 py-2.5 text-sm font-medium text-ink transition-opacity hover:opacity-90"
-              >
-                Browse the gallery
-              </Link>
-              <Link
-                href="/docs/skins"
-                className="rounded-sm border border-line px-4 py-2.5 text-sm text-muted transition-colors hover:border-amber hover:text-amber"
-              >
-                Skin format reference
-              </Link>
-            </div>
-
-            <div className="mt-9">
-              <MediaFigure capture={designer} />
-            </div>
+          <div className="mt-8 flex flex-wrap gap-4">
+            <Link href="/gallery" className="btn btn-primary">
+              Browse the gallery
+            </Link>
+            <Link href="/docs/skins" className="btn btn-ghost">
+              Skin format reference
+            </Link>
           </div>
 
-          <div className="panel p-5 sm:p-6">
+          <div className="mt-10">
+            <MediaFigure capture={designer} />
+          </div>
+        </div>
+
+        <Reveal>
+          <p aria-hidden className="ghost">
+            {skin.width} × {skin.height}
+          </p>
+          <div className="mt-6">
+            <SkinPlayer skin={skin} initialPercent={78} />
+          </div>
+
+          <div className="mt-10 border-t border-line pt-7">
             <p className="eyebrow">One click from any website</p>
             <p className="mt-3 text-sm text-muted">
               A skin hosted anywhere becomes an install button. AorinEQ checks the digest before
@@ -212,11 +238,8 @@ function Skins({
             <CodeBlock label="Install link for this skin" wrap>
               {installLink}
             </CodeBlock>
-            <div className="mt-4">
-              <SkinPlayer skin={skin} initialPercent={78} />
-            </div>
           </div>
-        </div>
+        </Reveal>
       </div>
     </section>
   );
@@ -226,22 +249,29 @@ function Equalizer({ capture }: { capture: LoadedCapture }) {
   const preamp = suggestPreampDb(DEMO_BANDS);
   return (
     <section className="border-b border-line">
-      <div className="shell py-16 lg:py-20">
-        <div className="flex flex-wrap items-baseline justify-between gap-4">
-          <h2 className="text-3xl font-bold text-sand sm:text-4xl">A real parametric EQ, per device</h2>
-          <p className="eyebrow">20 Hz … 20 kHz · up to 64 bands</p>
-        </div>
-
-        <div className="mt-10 grid gap-10 [&>*]:min-w-0 lg:grid-cols-[minmax(0,1.15fr)_minmax(0,1fr)] lg:gap-14">
-          <div className="panel p-5 sm:p-6">
-            <p className="eyebrow">Response · 6 bands</p>
-            <EqCurve
-              className="mt-4"
-              bands={DEMO_BANDS}
-              caption={`Suggested clipping preamp ${preamp.toFixed(1)} dB — the negation of the chain's own peak.`}
-            />
+      <div className="shell py-20 lg:py-28">
+        <Reveal className="flex flex-wrap items-end justify-between gap-x-10 gap-y-6">
+          <div>
+            <p className="eyebrow">20 Hz … 20 kHz · up to 64 bands</p>
+            <h2 className="title mt-4 max-w-[14ch] text-[clamp(2.25rem,4.6vw,3.75rem)] text-sand">
+              A real parametric EQ, per device
+            </h2>
           </div>
+          <p aria-hidden className="ghost">
+            20 Hz — 20 kHz
+          </p>
+        </Reveal>
 
+        <Reveal className="mt-12 border-y border-line py-6">
+          <p className="eyebrow">Response · 6 bands</p>
+          <EqCurve
+            className="mt-4"
+            bands={DEMO_BANDS}
+            caption={`Suggested clipping preamp ${preamp.toFixed(1)} dB — the negation of the chain's own peak.`}
+          />
+        </Reveal>
+
+        <div className="mt-12 grid gap-10 [&>*]:min-w-0 lg:grid-cols-2 lg:gap-16">
           <div>
             <p className="text-muted">
               Drag the curve, or type into the band strip: filter type, centre frequency, gain
@@ -254,7 +284,9 @@ function Equalizer({ capture }: { capture: LoadedCapture }) {
               directly with AutoEq, Peace and anything else that speaks the format. AutoEq
               profiles import by name from inside the app.
             </p>
+          </div>
 
+          <div>
             <CodeBlock label="What gets written">
               {`Preamp: ${preamp.toFixed(1)} dB
 Filter 1: ON LSC Fc 105 Hz Gain 4.2 dB Q 0.70
@@ -262,16 +294,13 @@ Filter 2: ON PK Fc 240 Hz Gain -2.6 dB Q 1.10
 Filter 3: ON PK Fc 1400 Hz Gain 1.4 dB Q 1.80`}
             </CodeBlock>
 
-            <Link
-              href="/tools/eq-preset"
-              className="inline-block rounded-sm border border-line px-4 py-2.5 text-sm text-muted transition-colors hover:border-amber hover:text-amber"
-            >
+            <Link href="/tools/eq-preset" className="btn btn-ghost mt-2">
               Build a shareable preset link
             </Link>
           </div>
         </div>
 
-        <div className="mt-10">
+        <div className="mt-12">
           <DeferredMedia capture={capture} />
         </div>
       </div>
@@ -298,15 +327,20 @@ const AIRPLAY_NOTES = [
 function AirPlay() {
   return (
     <section className="border-b border-line">
-      <div className="shell py-16 lg:py-20">
-        <div className="flex flex-wrap items-baseline justify-between gap-4">
-          <h2 className="text-3xl font-bold text-sand sm:text-4xl">
-            Straight to a HomePod, with nothing in between
-          </h2>
-          <p className="eyebrow">RAOP · 44.1 kHz · 250–2000 ms</p>
-        </div>
+      <div className="shell py-20 lg:py-28">
+        <Reveal className="flex flex-wrap items-end justify-between gap-x-10 gap-y-6 lg:flex-nowrap">
+          <p aria-hidden className="ghost order-2 lg:order-none">
+            RAOP
+          </p>
+          <div className="lg:text-right">
+            <p className="eyebrow">RAOP · 44.1 kHz · 250–2000 ms</p>
+            <h2 className="title mt-4 max-w-[17ch] text-[clamp(2.25rem,4.6vw,3.75rem)] text-sand lg:ml-auto">
+              Straight to a HomePod, with nothing in between
+            </h2>
+          </div>
+        </Reveal>
 
-        <div className="mt-10 grid gap-10 [&>*]:min-w-0 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.05fr)] lg:gap-14">
+        <div className="mt-12 grid gap-12 [&>*]:min-w-0 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.1fr)] lg:gap-16">
           <div>
             <p className="text-muted">
               Owning a HomePod and a Windows PC normally means buying something to bridge them.
@@ -325,28 +359,27 @@ function AirPlay() {
               power down between tracks and clip the first moment of the next one.
             </p>
 
-            <Link
-              href="/docs/airplay"
-              className="mt-6 inline-block rounded-sm border border-line px-4 py-2.5 text-sm text-muted transition-colors hover:border-amber hover:text-amber"
-            >
+            <Link href="/docs/airplay" className="btn btn-ghost mt-8">
               How AirPlay works here
             </Link>
+
+            <p className="mt-10 border-l-[3px] border-amber pl-5 text-sm text-muted">
+              One receiver at a time, and no AirPlay 2. It is newer than the rest of the app and
+              labelled experimental inside it.
+            </p>
           </div>
 
-          <div className="grid gap-px overflow-hidden rounded-sm border border-line bg-line">
-            {AIRPLAY_NOTES.map((note) => (
-              <div key={note.label} className="bg-panel p-6">
-                <h3 className="font-display text-lg font-semibold text-text">{note.label}</h3>
-                <p className="mt-2 text-sm text-muted">{note.body}</p>
-              </div>
+          <div>
+            {AIRPLAY_NOTES.map((note, index) => (
+              <Reveal key={note.label} delay={index * 90}>
+                <div className="border-t border-line py-7">
+                  <h3 className="font-display text-xl font-semibold text-text">{note.label}</h3>
+                  <p className="mt-3 text-muted">{note.body}</p>
+                </div>
+              </Reveal>
             ))}
           </div>
         </div>
-
-        <p className="mt-8 text-sm text-muted">
-          One receiver at a time, and no AirPlay 2. It is newer than the rest of the app and
-          labelled experimental inside it.
-        </p>
       </div>
     </section>
   );
@@ -376,24 +409,34 @@ const SHARING = [
 function Sharing() {
   return (
     <section className="border-b border-line">
-      <div className="shell py-16 lg:py-20">
-        <div className="flex flex-wrap items-baseline justify-between gap-4">
-          <h2 className="text-3xl font-bold text-sand sm:text-4xl">Everything travels as a link</h2>
+      <div className="shell py-20 lg:py-28">
+        <Reveal>
           <p className="eyebrow">4000 character ceiling · https only</p>
-        </div>
+          <h2 className="title mt-4 text-[clamp(2.25rem,4.6vw,3.75rem)] text-sand">
+            Everything travels as a link
+          </h2>
+        </Reveal>
 
-        <div className="mt-10 grid gap-px overflow-hidden rounded-sm border border-line bg-line md:grid-cols-3">
-          {SHARING.map((item) => (
-            <Link
-              key={item.href}
-              href={item.href}
-              className="group flex flex-col bg-panel p-6 transition-colors hover:bg-raised"
-            >
-              <p className="eyebrow text-amber">{item.eyebrow}</p>
-              <h3 className="mt-3 font-display text-lg font-semibold text-text">{item.title}</h3>
-              <p className="mt-3 flex-1 text-sm text-muted">{item.body}</p>
-              <span className="mt-4 text-sm text-amber">Open →</span>
-            </Link>
+        <div className="mt-12 border-b border-line">
+          {SHARING.map((item, index) => (
+            <Reveal key={item.href} delay={index * 90}>
+              <Link
+                href={item.href}
+                className="group grid gap-x-10 gap-y-3 border-t border-line py-8 transition-colors hover:bg-panel md:grid-cols-[minmax(0,17rem)_minmax(0,1fr)_auto] md:items-baseline md:px-4"
+              >
+                <p className="readout text-base text-amber">{item.eyebrow}</p>
+                <div>
+                  <h3 className="font-display text-2xl font-semibold text-text">{item.title}</h3>
+                  <p className="mt-3 max-w-2xl text-muted">{item.body}</p>
+                </div>
+                <span
+                  aria-hidden
+                  className="font-display text-2xl text-amber transition-transform duration-200 group-hover:translate-x-2"
+                >
+                  →
+                </span>
+              </Link>
+            </Reveal>
           ))}
         </div>
       </div>
@@ -403,31 +446,29 @@ function Sharing() {
 
 function Closing({ capture }: { capture: LoadedCapture }) {
   return (
-    <section>
-      <div className="shell py-16 lg:py-20">
-        <div className="grid gap-10 [&>*]:min-w-0 lg:grid-cols-2 lg:gap-14">
-          <div>
-            <h2 className="text-3xl font-bold text-sand sm:text-4xl">
-              It keeps itself current
-            </h2>
-            <p className="mt-5 text-muted">
-              AorinEQ checks GitHub Releases at startup and every 24 hours, verifies the new exe
-              against the release&apos;s published SHA-256, swaps itself in place and restarts.
-              If its folder is not writable it says so and links to the release instead. You can
-              turn all of it off at first run.
-            </p>
-            <p className="mt-4 text-muted">
-              Equalizer APO is never bundled. If it is missing, the app opens a setup guide that
-              downloads the official installer, walks the one step that needs you, and verifies
-              the result against your current playback device.
-            </p>
-            <div className="mt-8">
-              <DownloadCta compact />
-            </div>
+    <section className="bands">
+      <div className="shell grid gap-12 py-20 [&>*]:min-w-0 lg:grid-cols-2 lg:gap-16 lg:py-28">
+        <Reveal>
+          <h2 className="title text-[clamp(2.25rem,4.6vw,3.75rem)] text-sand">
+            It keeps itself current
+          </h2>
+          <p className="mt-8 text-muted">
+            AorinEQ checks GitHub Releases at startup and every 24 hours, verifies the new exe
+            against the release&apos;s published SHA-256, swaps itself in place and restarts.
+            If its folder is not writable it says so and links to the release instead. You can
+            turn all of it off at first run.
+          </p>
+          <p className="mt-4 text-muted">
+            Equalizer APO is never bundled. If it is missing, the app opens a setup guide that
+            downloads the official installer, walks the one step that needs you, and verifies
+            the result against your current playback device.
+          </p>
+          <div className="mt-9">
+            <DownloadCta compact />
           </div>
+        </Reveal>
 
-          <MediaFigure capture={capture} className="lg:self-center" />
-        </div>
+        <MediaFigure capture={capture} className="lg:self-center" />
       </div>
     </section>
   );

@@ -14,7 +14,7 @@ export default function ProtocolDocsPage() {
   return (
     <>
       <p className="eyebrow">Authoring</p>
-      <h1 className="mt-3 text-4xl font-bold text-text">The aorineq:// contract</h1>
+      <h1 className="title mt-3 text-4xl text-text">The aorineq:// contract</h1>
       <p className="mt-5 text-lg text-muted">
         AorinEQ registers a URL scheme per user at startup, so a link in a forum post, a Discord
         message or a page like this one can hand someone a skin or a tuning. This is the whole

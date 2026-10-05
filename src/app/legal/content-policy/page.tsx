@@ -13,7 +13,7 @@ export default function ContentPolicyPage() {
   return (
     <>
       <p className="eyebrow">Policies</p>
-      <h1 className="mt-3 text-4xl font-bold text-text">Content policy</h1>
+      <h1 className="title mt-3 text-4xl text-text">Content policy</h1>
       <p className="mt-5 text-lg text-muted">
         A skin is artwork someone drew to sit on their own screen. This policy says what is
         welcome in the gallery, and is written to be applied rather than admired.
